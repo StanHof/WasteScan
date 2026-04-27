@@ -43,7 +43,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.task.vision.classifier.ImageClassifier
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.FileUtil
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -259,24 +263,52 @@ fun ResultScreen(bitmap: Bitmap?, onTryAgain: () -> Unit) {
 
 fun classifyImage(bitmap: Bitmap, context: Context): String {
     return try {
-        // PAMIĘTAJ O POPRAWNEJ NAZWIE PLIKU!
-        val modelFileName = "mobilenet_v1_1.0_224_quant.tflite"
+        // 1. Wczytanie etykiet z pliku tekstowego
+        val labels = context.assets.open("labels.txt").bufferedReader().readLines()
 
-        val options = ImageClassifier.ImageClassifierOptions.builder().setMaxResults(1).build()
-        val classifier = ImageClassifier.createFromFileAndOptions(context, modelFileName, options)
+        // 2. Załadowanie Twojego modelu (PODMIEŃ NAZWĘ JEŚLI JEST INNA!)
+        val model = FileUtil.loadMappedFile(context, "model.tflite")
+        val interpreter = Interpreter(model)
 
-        val tensorImage = TensorImage.fromBitmap(bitmap)
-        val results = classifier.classify(tensorImage)
+        // 3. Zmiana rozmiaru zdjęcia (Teachable Machine zazwyczaj wymaga 224x224)
+        val imageProcessor = ImageProcessor.Builder()
+            .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
+            .build()
 
-        if (results.isNotEmpty() && results[0].categories.isNotEmpty()) {
-            val topCategory = results[0].categories[0]
-            val confidence = (topCategory.score * 100).toInt()
-            "${topCategory.label} - $confidence%"
-        } else {
-            "Nie rozpoznano"
+        var tensorImage = TensorImage(interpreter.getInputTensor(0).dataType())
+        tensorImage.load(bitmap)
+        tensorImage = imageProcessor.process(tensorImage)
+
+        // 4. Przygotowanie bufora na wyniki
+        val outputTensor = interpreter.getOutputTensor(0)
+        val probabilityBuffer = TensorBuffer.createFixedSize(outputTensor.shape(), outputTensor.dataType())
+
+        // 5. Klasyfikacja (Magia dzieje się tutaj!)
+        interpreter.run(tensorImage.buffer, probabilityBuffer.buffer)
+
+        // 6. Przeszukiwanie wyników, aby znaleźć ten z najwyższym procentem
+        val probabilities = probabilityBuffer.floatArray
+        var maxIdx = 0
+        var maxProb = 0f
+
+        for (i in probabilities.indices) {
+            if (probabilities[i] > maxProb) {
+                maxProb = probabilities[i]
+                maxIdx = i
+            }
         }
+
+        // Teachable Machine często dodaje cyfry do nazw (np. "0 Plastik"), ta funkcja usuwa te cyfry
+        val label = labels.getOrElse(maxIdx) { "Nieznany" }.replace(Regex("^\\d+\\s+"), "")
+        val confidence = (maxProb * 100).toInt()
+
+        // Zamykamy interpreter, aby nie zużywał pamięci
+        interpreter.close()
+
+        "$label - $confidence%"
+
     } catch (e: Exception) {
-        "Błąd modelu: ${e.message}"
+        "Błąd: ${e.message}"
     }
 }
 
