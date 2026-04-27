@@ -1,0 +1,6 @@
+0 Mixed
+1 Metal
+2 Paper
+3 Plastic
+4 Cardboard
+5 Glass
