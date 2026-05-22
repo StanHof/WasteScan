@@ -9,13 +9,12 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
+data class  ClassificationResult(val label: String, val confidence: Float)
 class WasteClassifier(private val context: Context) {
 
-    fun classify(bitmap: Bitmap): String {
+    fun classify(bitmap: Bitmap): List<ClassificationResult> {
         return try {
             val labels = context.assets.open("labels.txt").bufferedReader().readLines()
-
-            // Pamiętaj, aby nazwa pliku zgadzała się z tą w folderze assets!
             val model = FileUtil.loadMappedFile(context, "model.tflite")
             val interpreter = Interpreter(model)
 
@@ -33,25 +32,18 @@ class WasteClassifier(private val context: Context) {
             interpreter.run(tensorImage.buffer, probabilityBuffer.buffer)
 
             val probabilities = probabilityBuffer.floatArray
-            var maxIdx = 0
-            var maxProb = 0f
-
-            for (i in probabilities.indices) {
-                if (probabilities[i] > maxProb) {
-                    maxProb = probabilities[i]
-                    maxIdx = i
-                }
-            }
-
-            val label = labels.getOrElse(maxIdx) { "Nieznany" }.replace(Regex("^\\d+\\s+"), "")
-            val confidence = (maxProb * 100).toInt()
-
             interpreter.close()
 
-            "$label - $confidence%"
+
+            probabilities.indices.map { idx ->
+                val cleanLabel = labels.getOrElse(idx) {"Nieznany"}.replace(Regex("^\\d+\\s+"), "")
+                ClassificationResult(cleanLabel, probabilities[idx])
+            }.sortedByDescending { it.confidence }
+
 
         } catch (e: Exception) {
-            "Błąd: ${e.message}"
+            e.printStackTrace()
+            emptyList()
         }
     }
 }

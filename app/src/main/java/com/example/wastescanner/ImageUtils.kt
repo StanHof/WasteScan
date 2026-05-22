@@ -7,6 +7,7 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.compose.ui.graphics.Color
 
 // Obracanie zdjęcia ze sprzętowej matrycy aparatu
 fun rotateBitmap(bitmap: Bitmap, degrees: Int): Bitmap {
@@ -30,5 +31,34 @@ fun uriToBitmap(uri: Uri, context: Context): Bitmap? {
     } catch (e: Exception) {
         e.printStackTrace()
         null
+    }
+}
+
+// Funkcja wycinająca kwadrat ze środka zdjęcia
+fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.40f): Bitmap {
+    val width = bitmap.width
+    val height = bitmap.height
+
+    // 1. Znajdujemy krótszy bok (zazwyczaj to szerokość w trybie pionowym)
+    val minSide = Math.min(width, height)
+
+    // 2. Obliczamy fizyczny rozmiar wycinanego kwadratu (np. 75% szerokości)
+    val cropSize = (minSide * cropPercentage).toInt()
+
+    // 3. Obliczamy punkt startowy (X i Y), aby cięcie zaczęło się idealnie na środku
+    val startX = (width - cropSize) / 2
+    val startY = (height - cropSize) / 2
+
+    // 4. Tworzymy i zwracamy nową, wyciętą Bitmapę
+    return Bitmap.createBitmap(bitmap, startX, startY, cropSize, cropSize)
+}
+fun getBinColor(wasteType: String): Color {
+    return when (wasteType.lowercase()) {
+        "plastic", "metal" -> Color(0xFFFFD54F) // Żółty
+        "paper", "cardboard" -> Color(0xFF4FC3F7) // Niebieski
+        "glass", "glass" -> Color(0xFF81C784) // Zielony
+        "bio", "organiczne" -> Color(0xFFA1887F) // Brązowy
+        "mixed" -> Color(0xFF616161) // Ciemnoszary
+        else -> Color(0xFF9E9E9E) // Domyślny szary, gdy nie rozpozna
     }
 }

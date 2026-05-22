@@ -15,11 +15,10 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = GreenPrimary,
     secondary = GreenSecondary,
-    onSecondary = offwhite,
     tertiary = GreenTertiary,
     background = BackgroundDark,
     surface = SurfaceDark,
-    onPrimary = offwhite, // Kolor tekstu na głównym przycisku
+    onPrimary = TextLight, // Kolor tekstu na głównym przycisku
     onBackground = TextLight
 )
 
@@ -27,12 +26,11 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = GreenPrimary,
     secondary = GreenSecondary,
-    onSecondary = offwhite,
     tertiary = GreenTertiary,
-    background = BackgroundDark,
-    surface = SurfaceDark,
-    onPrimary = offwhite, // Kolor tekstu na głównym przycisku
-    onBackground = TextLight
+    background = BackgroundLight,
+    surface = Color(0xFFFFFFFF),
+    onPrimary = Color(0xFFFFD8A6),
+    onBackground = TextDark
 )
 
 // To jest "Opakowanie", którego będziesz używać w MainActivity

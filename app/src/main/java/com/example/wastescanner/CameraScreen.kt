@@ -1,12 +1,6 @@
 package com.example.wastescanner
-
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
-import android.graphics.Matrix
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -20,18 +14,22 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -49,21 +47,26 @@ import androidx.core.content.ContextCompat
 import com.example.wastescanner.ui.theme.WasteScannerTheme
 
 @Composable
-fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
+fun CameraScreen(onHistoryClick: () -> Unit, onPhotoTaken: (Bitmap) -> Unit) {
+    var isProcessing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val imageCapture = remember { ImageCapture.Builder().build() }
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ){
-        uri: Uri? ->
+    ){ uri: Uri? ->
         uri?.let {
+            isProcessing = true
             val bitmap = uriToBitmap(it, context)
             if(bitmap != null){
-                onPhotoTaken(bitmap)
+                val croppedBitmap = cropCenterSquare(bitmap)
+                isProcessing = false
+                onPhotoTaken(croppedBitmap)
             }
-
+            else{
+                isProcessing = false
+            }
         }
     }
     WasteScannerTheme(dynamicColor = false){
@@ -93,7 +96,7 @@ fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val rectSize = 700f
+            val rectSize = size.width * 0.7f
             val left = (size.width - rectSize) / 2
             val top = (size.height - rectSize) / 2
 
@@ -121,6 +124,22 @@ fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
                 style = Stroke(width = 6f)
             )
         }
+
+        IconButton(
+            onClick = onHistoryClick,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .statusBarsPadding() // Zabezpieczenie przed Notchem/Wcięciem w ekranie
+        ) {
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = "Historia skanów",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -135,8 +154,8 @@ fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
             Button(
                 onClick = { galleryLauncher.launch("image/*") },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary),
                 shape = CircleShape,
                 modifier = Modifier
                     .align(BiasAlignment(-0.7f, 0f))
@@ -152,18 +171,23 @@ fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
 
             Button(
                 onClick = {
+                    if (isProcessing) return@Button
+                    isProcessing = true
+
                     val executor = ContextCompat.getMainExecutor(context)
                     imageCapture.takePicture(
                         executor,
                         object : ImageCapture.OnImageCapturedCallback() {
                             override fun onCaptureSuccess(image: ImageProxy) {
-                                val rotatedBitmap =
-                                    rotateBitmap(image.toBitmap(), image.imageInfo.rotationDegrees)
-                                onPhotoTaken(rotatedBitmap)
+                                val rotatedBitmap = rotateBitmap(image.toBitmap(), image.imageInfo.rotationDegrees)
+                                val croppedBitmap = cropCenterSquare(rotatedBitmap)
+                                isProcessing = false
+                                onPhotoTaken(croppedBitmap)
                                 image.close()
                             }
 
                             override fun onError(exception: ImageCaptureException) {
+                                isProcessing = false
                                 exception.printStackTrace()
                             }
                         })
@@ -178,6 +202,20 @@ fun CameraScreen(onPhotoTaken: (Bitmap) -> Unit) {
         }
 
     }
+        if(isProcessing){
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(60.dp),
+                    strokeWidth = 6.dp
+                )
+            }
+        }
         }
 }
 
