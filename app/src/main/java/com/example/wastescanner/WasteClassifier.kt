@@ -8,6 +8,8 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.common.ops.NormalizeOp
 
 data class  ClassificationResult(val label: String, val confidence: Float)
 class WasteClassifier(private val context: Context) {
@@ -18,9 +20,18 @@ class WasteClassifier(private val context: Context) {
             val model = FileUtil.loadMappedFile(context, "model.tflite")
             val interpreter = Interpreter(model)
 
-            val imageProcessor = ImageProcessor.Builder()
+            val inputDataType = interpreter.getInputTensor(0).dataType()
+
+            val imageProcessorBuilder = ImageProcessor.Builder()
                 .add(ResizeOp(224, 224, ResizeOp.ResizeMethod.BILINEAR))
-                .build()
+
+            // Magiczna poprawka dla modeli z Teachable Machine!
+            // Jeśli model to Float32, kompresujemy piksele do skali od -1.0 do 1.0
+            if (inputDataType == DataType.FLOAT32) {
+                imageProcessorBuilder.add(NormalizeOp(127.5f, 127.5f))
+            }
+
+            val imageProcessor = imageProcessorBuilder.build()
 
             var tensorImage = TensorImage(interpreter.getInputTensor(0).dataType())
             tensorImage.load(bitmap)
