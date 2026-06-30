@@ -45,177 +45,216 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.wastescanner.ui.theme.WasteScannerTheme
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun CameraScreen(onHistoryClick: () -> Unit, onPhotoTaken: (Bitmap) -> Unit) {
-    var isProcessing by remember { mutableStateOf(false) }
+fun CameraScreen(
+    isCloudMode: Boolean,
+    onModeChange: (Boolean) -> Unit,
+    onHistoryClick: () -> Unit,
+    onPhotoTaken: (Bitmap) -> Unit
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     val imageCapture = remember { ImageCapture.Builder().build() }
+    val coroutineScope = rememberCoroutineScope()
+    var isProcessing by remember { mutableStateOf(false) }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ){ uri: Uri? ->
+    ) { uri: Uri? ->
         uri?.let {
             isProcessing = true
             val bitmap = uriToBitmap(it, context)
-            if(bitmap != null){
+            if (bitmap != null) {
                 val croppedBitmap = cropCenterSquare(bitmap)
-                isProcessing = false
                 onPhotoTaken(croppedBitmap)
-            }
-            else{
+                coroutineScope.launch {
+                    kotlinx.coroutines.delay(500)
+                    isProcessing = false
+                }
+            } else {
                 isProcessing = false
             }
         }
     }
-    WasteScannerTheme(dynamicColor = false){
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { ctx ->
-                val previewView = PreviewView(ctx)
-                val executor = ContextCompat.getMainExecutor(ctx)
 
-                cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
-                    val preview = Preview.Builder().build().also {
-                        it.setSurfaceProvider(previewView.surfaceProvider)
-                    }
+    WasteScannerTheme(dynamicColor = false) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // --- 1. PODGLĄD Z KAMERY ---
+            AndroidView(
+                factory = { ctx ->
+                    val previewView = PreviewView(ctx)
+                    val executor = ContextCompat.getMainExecutor(ctx)
+                    cameraProviderFuture.addListener({
+                        val cameraProvider = cameraProviderFuture.get()
+                        val preview = Preview.Builder().build().also {
+                            it.setSurfaceProvider(previewView.surfaceProvider)
+                        }
+                        try {
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture
+                            )
+                        } catch (exc: Exception) { exc.printStackTrace() }
+                    }, executor)
+                    previewView
+                },
+                modifier = Modifier.fillMaxSize()
+            )
 
-                    try {
-                        cameraProvider.unbindAll()
-                        cameraProvider.bindToLifecycle(
-                            lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture
+            // --- 2. CELOWNIK NA EKRANIE ---
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val rectSize = 700f
+                val left = (size.width - rectSize) / 2
+                val top = (size.height - rectSize) / 2 - 100f
+
+                val backgroundPath = androidx.compose.ui.graphics.Path().apply {
+                    addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
+                }
+                val cutoutPath = androidx.compose.ui.graphics.Path().apply {
+                    addRoundRect(
+                        androidx.compose.ui.geometry.RoundRect(
+                            rect = androidx.compose.ui.geometry.Rect(left, top, left + rectSize, top + rectSize),
+                            cornerRadius = CornerRadius(32f, 32f)
                         )
-                    } catch (exc: Exception) { exc.printStackTrace() }
-                }, executor)
+                    )
+                }
+                val combinedPath = androidx.compose.ui.graphics.Path().apply {
+                    op(backgroundPath, cutoutPath, androidx.compose.ui.graphics.PathOperation.Difference)
+                }
 
-                previewView
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val rectSize = size.width * 0.7f
-            val left = (size.width - rectSize) / 2
-            val top = (size.height - rectSize) / 2
-
-            val backgroundPath = androidx.compose.ui.graphics.Path().apply {
-                addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
+                drawPath(path = combinedPath, color = Color.Black.copy(alpha = 0.6f))
+                drawRoundRect(
+                    color = Color.Gray.copy(alpha = 0.8f),
+                    topLeft = Offset(left, top),
+                    size = Size(rectSize, rectSize),
+                    cornerRadius = CornerRadius(32f, 32f),
+                    style = Stroke(width = 6f)
+                )
             }
-            val cutoutPath = androidx.compose.ui.graphics.Path().apply {
-                addRoundRect(
-                    androidx.compose.ui.geometry.RoundRect(
-                        rect = androidx.compose.ui.geometry.Rect(left, top, left + rectSize, top + rectSize),
-                        cornerRadius = CornerRadius(32f, 32f)
+
+            // --- NOWOŚĆ: PANEL WYBORU TRYBU BADANIA (NA GÓRZE PO LEWEJ) ---
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .statusBarsPadding()
+                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = !isCloudMode,
+                    onClick = { onModeChange(false) },
+                    label = { Text("Lokalny (TFLite)") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+                FilterChip(
+                    selected = isCloudMode,
+                    onClick = { onModeChange(true) },
+                    label = { Text("Chmura (API)") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                     )
                 )
             }
-            val combinedPath = androidx.compose.ui.graphics.Path().apply {
-                op(backgroundPath, cutoutPath, androidx.compose.ui.graphics.PathOperation.Difference)
-            }
 
-            drawPath(path = combinedPath, color = Color.Black.copy(alpha = 0.6f))
-            drawRoundRect(
-                color = Color.Gray.copy(alpha = 0.8f),
-                topLeft = Offset(left, top),
-                size = Size(rectSize, rectSize),
-                cornerRadius = CornerRadius(32f, 32f),
-                style = Stroke(width = 6f)
-            )
-        }
-
-        IconButton(
-            onClick = onHistoryClick,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .statusBarsPadding() // Zabezpieczenie przed Notchem/Wcięciem w ekranie
-        ) {
-            Icon(
-                imageVector = Icons.Default.History,
-                contentDescription = "Historia skanów",
-                tint = Color.White,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .fillMaxHeight(fraction = 0.2f)
-                .height(50.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(color = MaterialTheme.colorScheme.background)
-
-        ) {
-
-            Button(
-                onClick = { galleryLauncher.launch("image/*") },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary),
-                shape = CircleShape,
+            // --- PRZYCISK HISTORII (NA GÓRZE PO PRAWEJ) ---
+            IconButton(
+                onClick = onHistoryClick,
                 modifier = Modifier
-                    .align(BiasAlignment(-0.7f, 0f))
-                    .size(55.dp),
-                contentPadding = PaddingValues(0.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .statusBarsPadding()
             ) {
                 Icon(
-                    imageVector = Icons.Default.PhotoLibrary,
-                    contentDescription = "Wybierz z galerii",
+                    imageVector = Icons.Default.History,
+                    contentDescription = "Historia skanów",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-
-            Button(
-                onClick = {
-                    if (isProcessing) return@Button
-                    isProcessing = true
-
-                    val executor = ContextCompat.getMainExecutor(context)
-                    imageCapture.takePicture(
-                        executor,
-                        object : ImageCapture.OnImageCapturedCallback() {
-                            override fun onCaptureSuccess(image: ImageProxy) {
-                                val rotatedBitmap = rotateBitmap(image.toBitmap(), image.imageInfo.rotationDegrees)
-                                val croppedBitmap = cropCenterSquare(rotatedBitmap)
-                                isProcessing = false
-                                onPhotoTaken(croppedBitmap)
-                                image.close()
-                            }
-
-                            override fun onError(exception: ImageCaptureException) {
-                                isProcessing = false
-                                exception.printStackTrace()
-                            }
-                        })
-                },
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.Center),
-                shape = CircleShape,
-                border = BorderStroke(5.dp , MaterialTheme.colorScheme.onPrimary),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {}
-        }
-
-    }
-        if(isProcessing){
+            // --- 3. DOLNY PANEL INTERFEJSU ---
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f)),
-                contentAlignment = Alignment.Center
-            ){
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(60.dp),
-                    strokeWidth = 6.dp
-                )
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .fillMaxHeight(fraction = 0.2f)
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .background(Color.Black.copy(alpha = 0.85f))
+                    .padding(bottom = 16.dp)
+            ) {
+                Button(
+                    onClick = { galleryLauncher.launch("image/*") },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary
+                    ),
+                    modifier = Modifier
+                        .align(BiasAlignment(-0.7f, 0f))
+                        .size(56.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = "Galeria")
+                }
+
+                Button(
+                    onClick = {
+                        if (isProcessing) return@Button
+                        isProcessing = true
+                        val executor = ContextCompat.getMainExecutor(context)
+                        imageCapture.takePicture(
+                            executor,
+                            object : ImageCapture.OnImageCapturedCallback() {
+                                override fun onCaptureSuccess(image: ImageProxy) {
+                                    val rotatedBitmap = rotateBitmap(image.toBitmap(), image.imageInfo.rotationDegrees)
+                                    val croppedBitmap = cropCenterSquare(rotatedBitmap)
+                                    onPhotoTaken(croppedBitmap)
+                                    coroutineScope.launch {
+                                        kotlinx.coroutines.delay(500)
+                                        isProcessing = false
+                                    }
+                                    image.close()
+                                }
+                                override fun onError(exception: ImageCaptureException) {
+                                    isProcessing = false
+                                    exception.printStackTrace()
+                                }
+                            })
+                    },
+                    modifier = Modifier
+                        .size(80.dp)
+                        .align(Alignment.Center),
+                    shape = CircleShape,
+                    border = BorderStroke(4.dp, Color.DarkGray),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                ) {}
+            }
+
+            // --- NAKŁADKA ŁADOWANIA ---
+            if (isProcessing) {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(60.dp),
+                        strokeWidth = 6.dp
+                    )
+                }
             }
         }
-        }
+    }
 }
-

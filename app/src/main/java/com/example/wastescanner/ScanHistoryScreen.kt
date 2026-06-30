@@ -31,7 +31,7 @@ data class HistoryItem(
     val confidence: Int,
     val dateString: String,
     val imagePath: String?, // <--- TO JEST ZMIANA
-    val allResults: List<ClassificationResult>
+    val analysisReport: AnalysisReport
 )
 
 @Composable

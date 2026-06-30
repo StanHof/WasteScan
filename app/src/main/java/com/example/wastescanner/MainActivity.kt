@@ -54,15 +54,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WasteAppNavigation() {
-    val context = LocalContext.current // Wymagane do zapisu plików
+    val context = LocalContext.current
     val navController = rememberNavController()
     var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
-    var historyResultsToShow by remember { mutableStateOf<List<ClassificationResult>>(emptyList()) }
-
+    var historyReportToShow by remember { mutableStateOf<AnalysisReport?>(null) }
     val historyItems = remember { mutableStateListOf<HistoryItem>() }
 
-    // NOWOŚĆ: Ta funkcja wykona się tylko RAZ, gdy aplikacja startuje.
-    // Ładuje ona całą zapisaną historię z pamięci telefonu.
+    // NOWOŚĆ: Globalny stan wybranego modelu (domyślnie lokalny)
+    var isCloudModeSelected by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         val savedHistory = StorageManager.loadHistory(context)
         historyItems.addAll(savedHistory)
@@ -78,44 +78,45 @@ fun WasteAppNavigation() {
     ) {
         composable("camera_screen") {
             CameraScreen(
+                isCloudMode = isCloudModeSelected,
+                onModeChange = { isCloudModeSelected = it }, // Zapisujemy wybór użytkownika
                 onHistoryClick = { navController.navigate("history_screen") },
                 onPhotoTaken = { bitmap ->
                     capturedImage = bitmap
-                    historyResultsToShow = emptyList()
+                    historyReportToShow = null
                     navController.navigate("result_screen")
                 }
             )
         }
 
         composable("result_screen") {
+            val activeClassifier: ClassifierStrategy = remember(isCloudModeSelected) {
+                if (isCloudModeSelected) CloudWasteClassifier() else LocalWasteClassifier(context)
+            }
+
             ResultScreen(
                 bitmap = capturedImage,
-                initialResults = historyResultsToShow,
-                onSaveToHistory = { label, confidence, date, allResults ->
+                initialReport = historyReportToShow,
+                classifier = activeClassifier,
+                onSaveToHistory = { label, confidence, date, report ->
                     val timestamp = System.currentTimeMillis()
-
-                    // 1. Zapisujemy zrobione zdjęcie fizycznie na dysk!
                     val savedImagePath = capturedImage?.let {
                         StorageManager.saveBitmap(context, it, "scan_$timestamp")
                     }
-
-                    // 2. Tworzymy wpis (ale teraz zamiast Bitmapy, ma on String ze ścieżką)
                     val newItem = HistoryItem(
                         id = timestamp,
                         label = label,
                         confidence = confidence,
                         dateString = date,
                         imagePath = savedImagePath,
-                        allResults = allResults
+                        analysisReport = report
                     )
-
-                    // 3. Dodajemy do listy na ekranie i... ZAPISUJEMY CAŁOŚĆ W TELEFONIE
                     historyItems.add(newItem)
                     StorageManager.saveHistory(context, historyItems)
                 },
                 onTryAgain = {
                     capturedImage = null
-                    historyResultsToShow = emptyList()
+                    historyReportToShow = null
                     navController.popBackStack()
                 }
             )
@@ -125,10 +126,8 @@ fun WasteAppNavigation() {
             ScanHistoryScreen(
                 historyList = historyItems,
                 onItemClick = { item ->
-                    // GDY KLIKASZ W STARY WPIS:
-                    // Odczytujemy zapisane na dysku zdjęcie i ładujemy wykres
                     capturedImage = StorageManager.loadBitmap(item.imagePath)
-                    historyResultsToShow = item.allResults
+                    historyReportToShow = item.analysisReport
                     navController.navigate("result_screen")
                 },
                 onBack = { navController.popBackStack() }

@@ -13,52 +13,46 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun ResultScreen(
     bitmap: Bitmap?,
-    initialResults: List<ClassificationResult> = emptyList(),
-    onSaveToHistory: (String, Int, String, List<ClassificationResult>) -> Unit,
+    initialReport: AnalysisReport? = null,
+    classifier: ClassifierStrategy,
+    onSaveToHistory: (String, Int, String, AnalysisReport) -> Unit,
     onTryAgain: () -> Unit
 ) {
-    val context = LocalContext.current
-    val classifier = remember { WasteClassifier(context) }
+    var currentReport by remember { mutableStateOf(initialReport) }
+    var isSaved by remember { mutableStateOf(initialReport != null) }
 
-    // Inicjalizujemy stan wartościami początkowymi (jeśli przyszły z historii)
-    var results by remember { mutableStateOf(initialResults) }
-    var isSaved by remember { mutableStateOf(initialResults.isNotEmpty()) }
+    val resultsList = currentReport?.results ?: emptyList()
+    val topResult = resultsList.firstOrNull()
 
     LaunchedEffect(bitmap) {
-        // 3. ZMIANA: Analizujemy TYLKO wtedy, gdy lista wyników jest pusta (nowy skan z aparatu)
-        if (bitmap != null && results.isEmpty()) {
-            val classification = classifier.classify(bitmap)
-            results = classification
+        if (bitmap != null && currentReport == null) {
+            val report = classifier.classify(bitmap)
+            currentReport = report
 
-            if (classification.isNotEmpty() && !isSaved) {
-                val topResult = classification.first()
+            if (report.results.isNotEmpty() && !isSaved) {
+                val bestMatch = report.results.first()
                 val dateFormat = SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.getDefault())
                 val currentDate = dateFormat.format(Date())
 
-                // Zapisujemy komplet danych (łącznie z listą wszystkich słupków)
                 onSaveToHistory(
-                    topResult.label,
-                    (topResult.confidence * 100).toInt(),
+                    bestMatch.label,
+                    (bestMatch.confidence * 100).toInt(),
                     currentDate,
-                    classification
+                    report
                 )
                 isSaved = true
             }
         }
     }
-
-    val topResult = results.firstOrNull()
 
     Column(
         modifier = Modifier
@@ -71,32 +65,32 @@ fun ResultScreen(
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Zeskanowany odpad",
-                contentScale = ContentScale.Crop, // Wypełnia ładnie kwadrat
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f) // Kwadratowe proporcje
-                    .clip(RoundedCornerShape(24.dp)) // Mocno zaokrąglone rogi
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(24.dp))
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // --- 2. KARTA Z WYNIKIEM ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp) // Delikatny cień
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
+            Column(modifier = Modifier.padding(24.dp)) {
 
-                ) {
-                if (topResult != null) {
+
+                if (currentReport == null) {
+                    Text("Analizowanie obrazu...", modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+                else if (topResult != null) {
                     Surface(
                         color = getBinColor(topResult.label),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                            .padding(bottom = 20.dp)
+                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 20.dp)
                     ) {
                         Text(
                             text = topResult.label.uppercase(),
@@ -106,69 +100,58 @@ fun ResultScreen(
                         )
                     }
 
+                    Text("Wykres prawdopodobieństwa:", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(12.dp))
 
+                    resultsList.forEach { res ->
+                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(res.label, modifier = Modifier.width(90.dp), fontSize = 14.sp, fontWeight = if (res == topResult) FontWeight.Bold else FontWeight.Normal)
+                            LinearProgressIndicator(
+                                progress = { res.confidence }, modifier = Modifier.weight(1f).height(12.dp).clip(RoundedCornerShape(6.dp)),
+                                color = getBinColor(res.label), trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text("${(res.confidence * 100).toInt()}%", fontSize = 14.sp, modifier = Modifier.width(40.dp), fontWeight = if (res == topResult) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
 
-                Text(
-                    "Wykres prawdopodobieństwa:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray
-                )
-                Spacer(modifier = Modifier.height(12.dp)) // Rozpychacz - spycha przycisk na dół ekranu
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, color = Color.LightGray.copy(alpha = 0.5f))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                results.forEach { res ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = res.label,
-                            modifier = Modifier.width(90.dp),
-                            fontSize = 14.sp,
-                            fontWeight = if (res == topResult) FontWeight.Bold else FontWeight.Normal
-                        )
+                    Text("Czas przetwarzania: ${currentReport?.executionTimeMs ?: 0} ms", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.End))
 
-                        LinearProgressIndicator(
-                            progress = { res.confidence },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(12.dp)
-                                .clip(RoundedCornerShape(6.dp)),
-                            color = getBinColor(res.label),
-                            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = "${(res.confidence * 100).toInt()}%",
-                            fontSize = 14.sp,
-                            modifier = Modifier.width(40.dp),
-                            fontWeight = if (res == topResult) FontWeight.Bold else FontWeight.Normal
-                        )
-
+                    if (currentReport?.comment != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Porada AI: ${currentReport?.comment}", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                     }
                 }
-            } else {
-                Text("Analizowanie obrazu..." , modifier = Modifier.align(Alignment.CenterHorizontally))
+                // 3. STAN: Awaria! Raport przyszedł, ale lista wyników jest pusta (wystąpił błąd łapany przez try-catch)
+                else {
+                    Text(
+                        text = "Błąd analizy chmurowej",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = currentReport?.comment ?: "Nieznany błąd. Sprawdź połączenie z internetem i konfigurację API.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
-    }
+
         Spacer(modifier = Modifier.weight(1f))
+
         Button(
             onClick = onTryAgain,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-
-            ) {
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
             Text("Skanuj kolejny odpad", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
-        }
-
     }
-
-
-
+}

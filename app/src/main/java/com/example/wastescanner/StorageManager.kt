@@ -46,4 +46,12 @@ object StorageManager {
             emptyList()
         }
     }
+
+    fun saveDebugIsolationBitmap(context: Context, bitmap: Bitmap) {
+        val file = File(context.filesDir, "debug_isolation.png")
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+    }
 }
+

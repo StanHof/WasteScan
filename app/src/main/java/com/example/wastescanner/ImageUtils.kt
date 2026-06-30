@@ -53,12 +53,13 @@ fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.40f): Bitmap {
     return Bitmap.createBitmap(bitmap, startX, startY, cropSize, cropSize)
 }
 fun getBinColor(wasteType: String): Color {
-    return when (wasteType.lowercase()) {
-        "plastic", "metal" -> Color(0xFFFFD54F) // Żółty
-        "paper", "cardboard" -> Color(0xFF4FC3F7) // Niebieski
-        "glass", "glass" -> Color(0xFF81C784) // Zielony
+    return when (wasteType.lowercase().trim()) {
+        "plastic", "metal", "plastik" -> Color(0xFFFFD54F) // Żółty
+        "paper", "cardboard", "papier" -> Color(0xFF4FC3F7) // Niebieski
+        "glass", "szkło" -> Color(0xFF81C784) // Zielony
         "bio", "organiczne" -> Color(0xFFA1887F) // Brązowy
-        "mixed" -> Color(0xFF616161) // Ciemnoszary
+        "mixed", "zmieszane" -> Color(0xFF616161) // Ciemnoszary
+        "brak odpadu" -> Color(0xFFE53935) // NOWOŚĆ: Czerwony kolor dla błędu klasyfikacji
         else -> Color(0xFF9E9E9E) // Domyślny szary, gdy nie rozpozna
     }
 }
