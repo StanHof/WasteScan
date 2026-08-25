@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 val localProperties = Properties()
@@ -92,4 +93,12 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.google.ai.client.generativeai:generativeai:0.7.0")
+
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 }

@@ -23,21 +23,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Download
 
-// 1. AKTUALIZACJA MODELU: dodajemy bitmapę oraz listę wszystkich wyników z wykresu
-data class HistoryItem(
-    val id: Long,
-    val label: String,
-    val confidence: Int,
-    val dateString: String,
-    val imagePath: String?, // <--- TO JEST ZMIANA
-    val analysisReport: AnalysisReport
-)
+
 
 @Composable
 fun ScanHistoryScreen(
     historyList: List<HistoryItem>,
-    onItemClick: (HistoryItem) -> Unit, // 2. NOWY PARAMETR: akcja po kliknięciu w pozycję
+    onItemClick: (HistoryItem) -> Unit,
+    onExportClick: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -51,6 +45,9 @@ fun ScanHistoryScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Powrót")
                     }
                     Text("Historia Skanów", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onExportClick) {
+                        Icon(Icons.Default.Download, contentDescription = "Eksportuj CSV", tint = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         },
@@ -103,7 +100,7 @@ fun ScanHistoryScreen(
                                     // Wyświetlamy zdjęcie, jeśli wczytane
                                     Image(
                                         bitmap = loadedBitmap!!.asImageBitmap(),
-                                        contentDescription = "Miniatura: ${item.label}",
+                                        contentDescription = "Miniatura skanu z dnia ${item.dateString}",
                                         contentScale = ContentScale.Crop, // Wypełnia ładnie kwadrat
                                         modifier = Modifier.fillMaxSize()
                                     )
@@ -125,10 +122,10 @@ fun ScanHistoryScreen(
 
                             Spacer(modifier = Modifier.width(16.dp)) // Odstęp od miniaturki
 
-                            // --- Sekcja tekstowa (bez zmian, tylko w Column) ---
+                            // --- Sekcja tekstowa: nazwa produktu zastąpiona liczbą rozpoznanych składników ---
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = item.label,
+                                    text = "Rozpoznano ${item.report.ingredients.size} składników",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -142,17 +139,17 @@ fun ScanHistoryScreen(
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            // --- Kółko procentowe (bez zmian) ---
+                            // --- Kółko statusu ryzyka (zamiast procentu pewności klasyfikacji) ---
                             Surface(
-                                color = getBinColor(item.label),
+                                color = getRiskColor(item.report.overallRisk),
                                 shape = CircleShape,
                                 modifier = Modifier.size(50.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
-                                        "${item.confidence}%",
+                                        item.report.overallRisk.labelPL.take(3).uppercase(),
                                         color = Color.White,
-                                        fontSize = 14.sp,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }

@@ -110,7 +110,7 @@ fun CameraScreen(
 
             // --- 2. CELOWNIK NA EKRANIE ---
             Canvas(modifier = Modifier.fillMaxSize()) {
-                val rectSize = 700f
+                val rectSize = 900f
                 val left = (size.width - rectSize) / 2
                 val top = (size.height - rectSize) / 2 - 100f
 

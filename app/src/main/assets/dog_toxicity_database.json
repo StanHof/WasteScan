@@ -1,0 +1,549 @@
+{
+  "schemaVersion": "1.0",
+  "lastUpdated": "2026-08-19",
+  "species": "dog",
+  "disclaimer": "Baza ma charakter pomocniczy/edukacyjny i nie zastępuje konsultacji z lekarzem weterynarii ani kontaktu z centrum kontroli zatruć zwierząt. W razie podejrzenia spożycia toksycznej substancji przez psa należy niezwłocznie skontaktować się z weterynarzem.",
+  "riskLevels": {
+    "1": {
+      "label": "bezpieczne",
+      "description": "Bezpieczne dla psów w typowych ilościach spotykanych w produktach spożywczych."
+    },
+    "2": {
+      "label": "ostrożnie",
+      "description": "Nie jest ostrym truciciem, ale może powodować dolegliwości trawienne, nietolerancje lub problemy przy dużych ilościach / częstym spożyciu / u wrażliwych osobników."
+    },
+    "3": {
+      "label": "niebezpieczne",
+      "description": "Może wywołać poważne objawy kliniczne (zatrucie, uszkodzenie narządów). Wymaga kontaktu z weterynarzem po spożyciu."
+    },
+    "4": {
+      "label": "krytyczne",
+      "description": "Silnie toksyczne, potencjalnie zagrażające życiu nawet w małych ilościach. Wymaga natychmiastowej interwencji weterynaryjnej."
+    }
+  },
+  "substances": [
+    {
+      "id": "theobromine_cocoa",
+      "namePL": "Kakao / czekolada (teobromina)",
+      "nameEN": "Chocolate / cocoa (theobromine)",
+      "aliases": ["czekolada", "kakao", "miazga kakaowa", "cocoa", "chocolate", "theobromine", "kakaowiec"],
+      "category": "metyloksantyny",
+      "riskLevel": 4,
+      "mechanism": "Teobromina i kofeina (metyloksantyny) są metabolizowane przez psy znacznie wolniej niż przez ludzi, co prowadzi do kumulacji i toksyczności układu sercowo-naczyniowego i nerwowego.",
+      "symptoms": ["wymioty", "biegunka", "przyspieszone tętno", "nadpobudliwość", "drżenia mięśniowe", "napady drgawkowe", "zgon w ciężkich przypadkach"],
+      "notes": "Toksyczność rośnie wraz ze stopniem gorzkości/ciemności czekolady (wyższa zawartość kakao = wyższe ryzyko).",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "caffeine",
+      "namePL": "Kofeina",
+      "nameEN": "Caffeine",
+      "aliases": ["kawa", "herbata", "energetyki", "cola", "coffee", "tea", "energy drink", "guarana"],
+      "category": "metyloksantyny",
+      "riskLevel": 4,
+      "mechanism": "Metyloksantyna o działaniu podobnym do teobrominy - pobudza układ nerwowy i sercowo-naczyniowy.",
+      "symptoms": ["nadpobudliwość", "przyspieszone tętno", "drżenia", "napady drgawkowe", "hipertermia"],
+      "sources": [
+        {"name": "FDA - Potentially Dangerous Items for Your Pet", "url": "https://www.fda.gov/animal-veterinary/animal-health-literacy/potentially-dangerous-items-your-pet"}
+      ]
+    },
+    {
+      "id": "xylitol",
+      "namePL": "Ksylitol",
+      "nameEN": "Xylitol",
+      "aliases": ["E967", "cukier brzozowy", "birch sugar", "xylitol"],
+      "category": "słodzik",
+      "riskLevel": 4,
+      "mechanism": "U psów wywołuje gwałtowne uwolnienie insuliny, prowadzące do hipoglikemii; przy wyższych dawkach może uszkadzać wątrobę.",
+      "symptoms": ["hipoglikemia", "wymioty", "letarg", "utrata koordynacji", "napady drgawkowe", "niewydolność wątroby"],
+      "notes": "Częsty składnik gum bez cukru, słodyczy, wypieków, past do zębów, niektórych masła orzechowego - szczególnie ważny do wykrywania na etykietach.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"},
+        {"name": "FDA - Potentially Dangerous Items for Your Pet", "url": "https://www.fda.gov/animal-veterinary/animal-health-literacy/potentially-dangerous-items-your-pet"}
+      ]
+    },
+    {
+      "id": "grapes_raisins",
+      "namePL": "Winogrona / rodzynki",
+      "nameEN": "Grapes / raisins",
+      "aliases": ["winogrona", "rodzynki", "sułtanki", "grapes", "raisins", "sultanas", "currants"],
+      "category": "owoce",
+      "riskLevel": 4,
+      "mechanism": "Dokładny mechanizm nieznany (podejrzewa się kwas winowy); może prowadzić do ostrej niewydolności nerek nawet po spożyciu małej ilości.",
+      "symptoms": ["wymioty", "biegunka", "letarg", "ostra niewydolność nerek"],
+      "notes": "Toksyczność nie zależy proporcjonalnie od dawki - nawet pojedyncze winogrono może wywołać reakcję u wrażliwego psa.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "allium",
+      "namePL": "Cebula, czosnek, szczypiorek, por",
+      "nameEN": "Onion, garlic, chives, leek",
+      "aliases": ["cebula", "czosnek", "szczypiorek", "por", "onion", "garlic", "chives", "leek", "onion powder", "proszek czosnkowy", "proszek cebulowy"],
+      "category": "warzywa (Allium)",
+      "riskLevel": 3,
+      "mechanism": "Związki tiosiarczanowe uszkadzają czerwone krwinki, prowadząc do anemii hemolitycznej.",
+      "symptoms": ["osłabienie", "bladość błon śluzowych", "przyspieszone tętno", "anemia hemolityczna"],
+      "notes": "Toksyczne w każdej formie: surowej, gotowanej, sproszkowanej, odwodnionej. Proszek cebulowy/czosnkowy w przyprawach jest częstym niewidocznym źródłem.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "macadamia",
+      "namePL": "Orzechy makadamia",
+      "nameEN": "Macadamia nuts",
+      "aliases": ["makadamia", "macadamia nuts"],
+      "category": "orzechy",
+      "riskLevel": 3,
+      "mechanism": "Mechanizm toksyczności nieznany; toksyczność opisano wyłącznie u psów.",
+      "symptoms": ["osłabienie tylnych kończyn", "wymioty", "drżenia", "podwyższona temperatura ciała", "ból stawów"],
+      "notes": "Objawy zwykle łagodne i ustępują samoistnie w 24-48h, ale wymagają obserwacji i kontaktu z weterynarzem.",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Macadamia Nut Poisoning", "url": "https://vcahospitals.com/know-your-pet/macadamia-nut-poisoning"},
+        {"name": "Merck Veterinary Manual - Macadamia Nut Toxicosis", "url": "https://www.merckvetmanual.com/toxicology/food-hazards/macadamia-nut-toxicosis-in-dogs"}
+      ]
+    },
+    {
+      "id": "alcohol",
+      "namePL": "Alkohol",
+      "nameEN": "Alcohol / ethanol",
+      "aliases": ["alkohol", "etanol", "piwo", "wino", "alcohol", "ethanol", "beer", "wine"],
+      "category": "inne",
+      "riskLevel": 4,
+      "mechanism": "Szybko wchłaniany, depresyjnie działa na ośrodkowy układ nerwowy i układ oddechowy.",
+      "symptoms": ["wymioty", "biegunka", "brak koordynacji", "trudności w oddychaniu", "zaburzenia pH krwi", "śpiączka", "zgon"],
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "avocado",
+      "namePL": "Awokado",
+      "nameEN": "Avocado",
+      "aliases": ["awokado", "avocado", "persyna", "persin"],
+      "category": "owoce",
+      "riskLevel": 2,
+      "mechanism": "Zawiera persynę - dla psów działa łagodniej niż dla ptaków/przeżuwaczy, dla których jest silnie toksyczna.",
+      "symptoms": ["wymioty", "biegunka"],
+      "notes": "U psów toksyczność jest niższa niż u innych gatunków, ale nadal zalecana ostrożność, zwłaszcza z pestką (ryzyko niedrożności) i skórką.",
+      "sources": [
+        {"name": "FDA - Potentially Dangerous Items for Your Pet", "url": "https://www.fda.gov/animal-veterinary/animal-health-literacy/potentially-dangerous-items-your-pet"}
+      ]
+    },
+    {
+      "id": "raw_yeast_dough",
+      "namePL": "Surowe ciasto drożdżowe",
+      "nameEN": "Raw yeast dough",
+      "aliases": ["ciasto drożdżowe", "surowe ciasto", "raw dough", "yeast dough"],
+      "category": "inne",
+      "riskLevel": 3,
+      "mechanism": "Ciasto rośnie w cieple żołądka, powodując wzdęcie i ryzyko skrętu żołądka; drożdże fermentują do etanolu, dodatkowo powodując zatrucie alkoholowe.",
+      "symptoms": ["wzdęcie brzucha", "ból brzucha", "objawy zatrucia alkoholowego", "ryzyko skrętu żołądka (stan zagrażający życiu)"],
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "excess_salt",
+      "namePL": "Nadmiar soli / sodu",
+      "nameEN": "Excess salt / sodium",
+      "aliases": ["sól", "chlorek sodu", "salt", "sodium chloride", "słone przekąski"],
+      "category": "dodatki",
+      "riskLevel": 3,
+      "mechanism": "Nadmiar sodu zaburza gospodarkę wodno-elektrolitową, w skrajnych przypadkach prowadząc do zatrucia solą.",
+      "symptoms": ["nadmierne pragnienie", "nadmierne oddawanie moczu", "wymioty", "biegunka", "drżenia", "podwyższona temperatura", "napady drgawkowe"],
+      "notes": "Typowe w słonych przekąskach (chipsy, precle, przetworzone mięso).",
+      "sources": [
+        {"name": "ASPCApro - People Foods Pets Should Never Eat", "url": "https://www.aspcapro.org/resource/people-foods-pets-should-never-eat"}
+      ]
+    },
+    {
+      "id": "nutmeg",
+      "namePL": "Gałka muszkatołowa",
+      "nameEN": "Nutmeg",
+      "aliases": ["gałka muszkatołowa", "nutmeg", "myristicin", "mirystycyna"],
+      "category": "przyprawy",
+      "riskLevel": 3,
+      "mechanism": "Zawiera mirystycynę, która w wyższych dawkach może wywoływać objawy neurologiczne.",
+      "symptoms": ["halucynacje", "silne wymioty", "przyspieszone tętno", "napady drgawkowe (przy dużych dawkach)"],
+      "sources": [
+        {"name": "Pets Best - What Foods Can Dogs Not Eat", "url": "https://www.petsbest.com/blog/20-foods-dogs-shouldnt-eat"}
+      ]
+    },
+    {
+      "id": "mushrooms_wild",
+      "namePL": "Grzyby (dzikie/nieznanego pochodzenia)",
+      "nameEN": "Wild / unknown mushrooms",
+      "aliases": ["grzyby", "mushrooms", "wild mushrooms"],
+      "category": "grzyby",
+      "riskLevel": 3,
+      "mechanism": "Niektóre gatunki grzybów zawierają toksyny uszkadzające wątrobę i nerki, wywołujące też objawy neurologiczne.",
+      "symptoms": ["wymioty", "biegunka", "halucynacje", "uszkodzenie wątroby lub nerek"],
+      "notes": "Umyte grzyby sklepowe (białe) są zwykle bezpieczne, ale grzyby dzikiego pochodzenia lub nieznanego gatunku traktuje się jako ryzykowne.",
+      "sources": [
+        {"name": "Pets Best - What Foods Can Dogs Not Eat", "url": "https://www.petsbest.com/blog/20-foods-dogs-shouldnt-eat"}
+      ]
+    },
+    {
+      "id": "milk_dairy",
+      "namePL": "Mleko i nabiał",
+      "nameEN": "Milk and dairy",
+      "aliases": ["mleko", "nabiał", "milk", "dairy", "lactose", "laktoza"],
+      "category": "nabiał",
+      "riskLevel": 2,
+      "mechanism": "Dorosłe psy mają ograniczoną ilość laktazy, enzymu rozkładającego laktozę, co powoduje nietolerancję.",
+      "symptoms": ["biegunka", "wzdęcia", "dyskomfort trawienny"],
+      "notes": "Nie jest toksyczne, ale częsty powód dolegliwości trawiennych - warto flagować jako 'ostrożnie', nie jako niebezpieczne.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "citrus",
+      "namePL": "Owoce cytrusowe (skórka, pestki, liście)",
+      "nameEN": "Citrus (peel, seeds, leaves)",
+      "aliases": ["cytrusy", "skórka pomarańczy", "citrus peel", "citrus"],
+      "category": "owoce",
+      "riskLevel": 2,
+      "mechanism": "Olejki eteryczne i kwas cytrynowy w skórce/liściach mogą podrażniać przewód pokarmowy w większych ilościach.",
+      "symptoms": ["podrażnienie żołądka", "łagodne dolegliwości trawienne"],
+      "notes": "Sam miąższ owocu w małych ilościach zwykle nie stanowi problemu.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "raw_meat_eggs",
+      "namePL": "Surowe mięso i jaja",
+      "nameEN": "Raw meat and eggs",
+      "aliases": ["surowe mięso", "surowe jaja", "raw meat", "raw eggs"],
+      "category": "mięso/jaja",
+      "riskLevel": 2,
+      "mechanism": "Ryzyko bakteryjne (Salmonella, E. coli); surowe białko jaja zawiera awidynę, utrudniającą wchłanianie biotyny.",
+      "symptoms": ["zatrucie pokarmowe", "problemy ze skórą/sierścią przy długotrwałym spożyciu surowych jaj"],
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "bones",
+      "namePL": "Kości",
+      "nameEN": "Bones",
+      "aliases": ["kości", "bones"],
+      "category": "inne",
+      "riskLevel": 2,
+      "mechanism": "Nie jest toksykologicznym zagrożeniem, ale mechanicznym - ryzyko urazu lub niedrożności przewodu pokarmowego.",
+      "symptoms": ["uszkodzenie przewodu pokarmowego", "niedrożność jelit", "uraz jamy ustnej"],
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "fatty_processed_food",
+      "namePL": "Tłuste / przetworzone jedzenie",
+      "nameEN": "Fatty / processed food",
+      "aliases": ["boczek", "hot dog", "kiełbasa", "fast food", "bacon", "hot dog", "processed meat"],
+      "category": "inne",
+      "riskLevel": 2,
+      "mechanism": "Wysoka zawartość tłuszczu może wywoływać zapalenie trzustki, szczególnie u ras predysponowanych.",
+      "symptoms": ["ból brzucha", "wymioty", "biegunka", "letarg", "zapalenie trzustki"],
+      "sources": [
+        {"name": "ASPCA - Be On the Lookout at Your Cookout", "url": "https://www.aspca.org/news/be-lookout-your-cookout"}
+      ]
+    },
+    {
+      "id": "artificial_sweeteners_other",
+      "namePL": "Inne sztuczne słodziki (aspartam, acesulfam K, sacharyna)",
+      "nameEN": "Other artificial sweeteners",
+      "aliases": ["aspartam", "E951", "acesulfam K", "E950", "sacharyna", "E954", "aspartame", "acesulfame potassium", "saccharin"],
+      "category": "słodzik",
+      "riskLevel": 2,
+      "mechanism": "W przeciwieństwie do ksylitolu nie wywołują gwałtownej hipoglikemii, ale nie są przeznaczone do spożycia przez zwierzęta i mogą powodować dolegliwości trawienne.",
+      "symptoms": ["dolegliwości trawienne"],
+      "notes": "WAŻNE: nie mylić z ksylitolem (E967), który ma znacznie wyższy poziom ryzyka (4). Rozróżnienie numerów E jest krytyczne dla poprawności systemu.",
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "cinnamon",
+      "namePL": "Cynamon",
+      "nameEN": "Cinnamon",
+      "aliases": ["cynamon", "cinnamon"],
+      "category": "przyprawy",
+      "riskLevel": 2,
+      "mechanism": "Nie jest silnie toksyczny, ale olejki mogą podrażniać jamę ustną i przewód pokarmowy; duże ilości mogą obniżać poziom cukru we krwi.",
+      "symptoms": ["podrażnienie jamy ustnej", "obniżony poziom cukru we krwi przy dużych ilościach"],
+      "sources": [
+        {"name": "Pets Best - What Foods Can Dogs Not Eat", "url": "https://www.petsbest.com/blog/20-foods-dogs-shouldnt-eat"}
+      ]
+    },
+    {
+      "id": "coconut",
+      "namePL": "Kokos / olej kokosowy",
+      "nameEN": "Coconut / coconut oil",
+      "aliases": ["kokos", "olej kokosowy", "coconut", "coconut oil"],
+      "category": "owoce/tłuszcze",
+      "riskLevel": 1,
+      "mechanism": "W małych ilościach zwykle bezpieczny; duże ilości mogą powodować rozwolnienie ze względu na zawartość tłuszczu (oleje MCT).",
+      "symptoms": ["łagodna biegunka przy dużych ilościach"],
+      "sources": [
+        {"name": "ASPCA - People Foods to Avoid Feeding Your Pets", "url": "https://www.aspca.org/pet-care/aspca-poison-control/people-foods-avoid-feeding-your-pets"}
+      ]
+    },
+    {
+      "id": "green_potato_solanine",
+      "namePL": "Zielone / niedojrzałe ziemniaki (solanina)",
+      "nameEN": "Green / unripe potatoes (solanine)",
+      "aliases": ["zielone ziemniaki", "solanina", "green potato", "solanine"],
+      "category": "warzywa (Solanaceae)",
+      "riskLevel": 2,
+      "mechanism": "Zielone części ziemniaka (kiełki, zielona skórka) zawierają solaninę, glikoalkaloid o działaniu drażniącym i neurotoksycznym w większych ilościach.",
+      "symptoms": ["dolegliwości trawienne", "przy dużych ilościach: objawy neurologiczne"],
+      "notes": "Dojrzały, ugotowany ziemniak bez zielonych/kiełkujących fragmentów jest bezpieczny.",
+      "sources": [
+        {"name": "Pets Best - What Foods Can Dogs Not Eat", "url": "https://www.petsbest.com/blog/20-foods-dogs-shouldnt-eat"}
+      ]
+    },
+    {
+      "id": "moldy_food",
+      "namePL": "Spleśniałe jedzenie",
+      "nameEN": "Moldy food",
+      "aliases": ["pleśń", "spleśniałe jedzenie", "moldy food", "mold"],
+      "category": "inne",
+      "riskLevel": 3,
+      "mechanism": "Niektóre pleśnie produkują mykotoksyny tremorogenne, wywołujące silne drżenia i drgawki.",
+      "symptoms": ["drżenia mięśniowe", "napady drgawkowe", "hipertermia"],
+      "sources": [
+        {"name": "ASPCApro - People Foods Pets Should Never Eat", "url": "https://www.aspcapro.org/resource/people-foods-pets-should-never-eat"}
+      ]
+    },
+    {
+      "id": "bleach_sodium_hypochlorite",
+      "namePL": "Wybielacz chlorowy (podchloryn sodu)",
+      "nameEN": "Chlorine bleach (sodium hypochlorite)",
+      "aliases": ["wybielacz", "podchloryn sodu", "chlorine bleach", "sodium hypochlorite", "bleach"],
+      "category": "chemia domowa",
+      "riskLevel": 3,
+      "mechanism": "Działanie żrące zależne od stężenia i pH; nierozcieńczony wybielacz uszkadza błonę śluzową jamy ustnej i przełyku, a przy wyższych stężeniach (np. produkty basenowe) może powodować głębokie oparzenia chemiczne.",
+      "symptoms": ["wymioty", "nadmierne ślinienie", "letarg", "brak apetytu", "biegunka", "podrażnienie/oparzenie jamy ustnej i przełyku przy stężonych produktach", "kaszel i trudności w oddychaniu przy wdychaniu oparów"],
+      "notes": "NIGDY nie mieszać z amoniakiem - powstający gaz chloraminowy jest silnie toksyczny dla układu oddechowego. Zwykłe rozcieńczone wybielacze domowe (3-10%) są zwykle mniej groźne niż produkty do basenów (70-80%).",
+      "sources": [
+        {"name": "ASPCA - Poisonous Household Products", "url": "https://www.aspca.org/pet-care/aspca-poison-control/poisonous-household-products"},
+        {"name": "MSD Veterinary Manual - Toxicoses From Household Cleaners and Personal Care Products", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-household-cleaners-and-personal-care-products-in-animals"}
+      ]
+    },
+    {
+      "id": "alkaline_corrosives",
+      "namePL": "Środki żrące zasadowe (udrażniacze do rur, czyściki do piekarnika)",
+      "nameEN": "Alkaline corrosives (drain cleaners, oven cleaners)",
+      "aliases": ["wodorotlenek sodu", "soda kaustyczna", "wodorotlenek potasu", "udrażniacz do rur", "środek do czyszczenia piekarnika", "sodium hydroxide", "potassium hydroxide", "drain cleaner", "oven cleaner", "lye"],
+      "category": "chemia domowa",
+      "riskLevel": 4,
+      "mechanism": "Silnie zasadowe (pH > 11) środki niemal natychmiast uszkadzają tkanki przy kontakcie; w przeciwieństwie do kwasów prawie nie mają smaku/zapachu ostrzegawczego, co sprzyja większym, bardziej niebezpiecznym ekspozycjom.",
+      "symptoms": ["silne ślinienie", "wymioty (czasem z krwią)", "trudności w przełykaniu", "ból brzucha", "oparzenia jamy ustnej, przełyku i żołądka", "gorączka", "smoliste stolce (krwawienie)"],
+      "notes": "Pełny zakres uszkodzeń tkanki może ujawnić się dopiero do 12-24h po ekspozycji - obserwacja weterynaryjna jest konieczna nawet przy pozornie łagodnych objawach początkowych.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Alkalis", "url": "https://www.petpoisonhelpline.com/poison/alkalis/"},
+        {"name": "MSD Veterinary Manual - Toxicoses From Corrosive Agents in Animals", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-corrosive-agents-in-animals"}
+      ]
+    },
+    {
+      "id": "laundry_detergent_pods",
+      "namePL": "Kapsułki żelowe do prania i zmywania",
+      "nameEN": "Laundry and dishwasher detergent pods",
+      "aliases": ["kapsułki do prania", "kapsułki żelowe", "tabletki do zmywarki", "laundry pods", "detergent pods", "dishwasher pods"],
+      "category": "chemia domowa",
+      "riskLevel": 3,
+      "mechanism": "Skoncentrowany detergent pod ciśnieniem wewnątrz rozpuszczalnej błonki - przegryzienie kapsułki uwalnia go gwałtownie, powlekając jamę ustną i gardło na dłuższy czas niż zwykły płynny detergent, zwiększając ryzyko aspiracji do płuc.",
+      "symptoms": ["wymioty", "podrażnienie jamy ustnej i gardła", "kaszel", "krztuszenie się", "w cięższych przypadkach: duszność, osłabienie, zapaść"],
+      "sources": [
+        {"name": "MSD Veterinary Manual - Toxicoses From Household Cleaners and Personal Care Products", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-household-cleaners-and-personal-care-products-in-animals"},
+        {"name": "ASPCA - Poisonous Household Products", "url": "https://www.aspca.org/pet-care/aspca-poison-control/poisonous-household-products"}
+      ]
+    },
+    {
+      "id": "cationic_detergents_fabric_softener",
+      "namePL": "Zmiękczacze do tkanin i chusteczki do suszarki",
+      "nameEN": "Fabric softeners and dryer sheets",
+      "aliases": ["zmiękczacz do tkanin", "chusteczki do suszarki", "fabric softener", "dryer sheets"],
+      "category": "chemia domowa",
+      "riskLevel": 3,
+      "mechanism": "Zawierają detergenty kationowe, które w odróżnieniu od większości detergentów domowych mogą powodować głębokie, żrące uszkodzenia błony śluzowej, a nie tylko łagodne podrażnienie.",
+      "symptoms": ["silne ślinienie", "wymioty", "owrzodzenia jamy ustnej, przełyku i żołądka", "brak apetytu", "ból przy przełykaniu"],
+      "sources": [
+        {"name": "ASPCA - Poisonous Household Products", "url": "https://www.aspca.org/pet-care/aspca-poison-control/poisonous-household-products"}
+      ]
+    },
+    {
+      "id": "detergents_soaps_shampoos",
+      "namePL": "Detergenty i mydła (płyn do naczyń, szampony, mydło w kostce)",
+      "nameEN": "Detergents, soaps and shampoos",
+      "aliases": ["płyn do naczyń", "szampon", "mydło", "płyn do mycia", "dish soap", "shampoo", "bar soap", "sodium lauryl sulfate", "laurylosiarczan sodu"],
+      "category": "chemia domowa",
+      "riskLevel": 2,
+      "mechanism": "Detergenty anionowe i niejonowe (np. laurylosiarczan sodu) działają jako łagodne środki drażniące z minimalnym wchłanianiem ogólnoustrojowym.",
+      "symptoms": ["wymioty", "nudności", "biegunka", "w rzadkich, cięższych przypadkach: osłabienie, duszność"],
+      "notes": "Zwykle najłagodniejsza kategoria wśród środków czystości domowej - ryzyko rośnie przy produktach stężonych/nierozcieńczonych lub wdychaniu w formie aerozolu.",
+      "sources": [
+        {"name": "MSD Veterinary Manual - Toxicoses From Household Cleaners and Personal Care Products", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-household-cleaners-and-personal-care-products-in-animals"}
+      ]
+    },
+    {
+      "id": "ethylene_glycol_antifreeze",
+      "namePL": "Glikol etylenowy (płyn do chłodnic / płyn niezamarzający)",
+      "nameEN": "Ethylene glycol (antifreeze / coolant)",
+      "aliases": ["glikol etylenowy", "płyn do chłodnic", "płyn niezamarzający", "płyn przeciw zamarzaniu", "ethylene glycol", "antifreeze", "coolant"],
+      "category": "chemia domowa",
+      "riskLevel": 4,
+      "mechanism": "Słodki smak przyciąga zwierzęta do samodzielnego spożycia; margines bezpieczeństwa jest wyjątkowo wąski, a metabolity glikolu etylenowego krystalizują w nerkach, prowadząc do ostrej niewydolności nerek.",
+      "symptoms": ["wymioty", "letarg", "brak koordynacji ruchowej", "nadmierne pragnienie i oddawanie moczu", "napady drgawkowe", "śpiączka", "ostra niewydolność nerek", "zgon bez leczenia"],
+      "notes": "Już około pół łyżeczki na kilogram masy ciała może być śmiertelne. Leczenie (antidotum) jest skuteczne tylko w ciągu pierwszych 8-12h od spożycia - to jeden z najpilniejszych przypadków w toksykologii weterynaryjnej.",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Ethylene Glycol Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/ethylene-glycol-poisoning-in-dogs"},
+        {"name": "Merck Veterinary Manual - Ethylene Glycol (Antifreeze) Poisoning", "url": "https://www.merckvetmanual.com/special-pet-topics/poisoning/ethylene-glycol-antifreeze-poisoning"}
+      ]
+    },
+    {
+      "id": "isopropyl_ethanol_hand_sanitizer",
+      "namePL": "Płyny/żele do dezynfekcji rąk (alkohol izopropylowy, etanol)",
+      "nameEN": "Hand sanitizer (isopropyl alcohol, ethanol)",
+      "aliases": ["płyn do dezynfekcji rąk", "żel antybakteryjny", "alkohol izopropylowy", "izopropanol", "hand sanitizer", "isopropyl alcohol", "ethanol"],
+      "category": "kosmetyki",
+      "riskLevel": 3,
+      "mechanism": "Wysoko stężony alkohol (60-95%) szybko się wchłania i działa depresyjnie na ośrodkowy układ nerwowy oraz obniża poziom cukru we krwi, ciśnienie i temperaturę ciała.",
+      "symptoms": ["wymioty", "letarg", "brak koordynacji ruchowej", "osłabione oddychanie", "hipoglikemia", "spadek ciśnienia i temperatury ciała", "w ciężkich przypadkach: napady drgawkowe, niewydolność oddechowa"],
+      "notes": "Objawy mogą pojawić się już po 30-90 minutach. Małe psy są w grupie największego ryzyka przy tej samej ilości spożytego produktu. Zlizanie odrobiny wysuszonego płynu z rąk domownika zwykle NIE stanowi zagrożenia.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Ethanol Hand Sanitizer", "url": "https://www.petpoisonhelpline.com/poison/hand-sanitizer-ethanol/"}
+      ]
+    },
+    {
+      "id": "essential_oils",
+      "namePL": "Olejki eteryczne (np. z drzewa herbacianego, eukaliptusowy)",
+      "nameEN": "Essential oils (e.g. tea tree, eucalyptus)",
+      "aliases": ["olejek eteryczny", "olejek z drzewa herbacianego", "olejek herbaciany", "olejek eukaliptusowy", "essential oil", "tea tree oil", "melaleuca", "eucalyptus oil"],
+      "category": "kosmetyki",
+      "riskLevel": 3,
+      "mechanism": "Silnie skoncentrowane związki lotne wchłaniają się zarówno przez przewód pokarmowy, jak i przez skórę, działając drażniąco miejscowo oraz depresyjnie na ośrodkowy układ nerwowy.",
+      "symptoms": ["podrażnienie skóry i jamy ustnej", "wymioty", "osłabienie", "brak koordynacji ruchowej ('chwiejny chód')", "drżenia mięśniowe", "obniżona temperatura ciała", "w ciężkich przypadkach: śpiączka, uszkodzenie wątroby"],
+      "notes": "Częste w dyfuzorach zapachowych, kosmetykach naturalnych i domowych produktach do pielęgnacji zwierząt. Zaledwie kilka kropli stężonego olejku (np. z drzewa herbacianego) na skórę może być groźne.",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Essential Oil and Liquid Potpourri Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/essential-oil-and-liquid-potpourri-poisoning-in-dogs"},
+        {"name": "Pet Poison Helpline - Tea Tree Oil", "url": "https://www.petpoisonhelpline.com/poison/tea-tree-oil/"}
+      ]
+    },
+    {
+      "id": "anticoagulant_rodenticide",
+      "namePL": "Trutki na gryzonie (antykoagulanty)",
+      "nameEN": "Anticoagulant rodenticides (rat/mouse poison)",
+      "aliases": ["trutka na szczury", "trutka na myszy", "trutka na gryzonie", "brodifakum", "bromadiolon", "warfaryna", "rodenticide", "rat poison", "mouse poison", "brodifacoum", "bromadiolone", "warfarin"],
+      "category": "chemia domowa",
+      "riskLevel": 4,
+      "mechanism": "Blokują enzym odpowiedzialny za recykling witaminy K1, niezbędnej do produkcji czynników krzepnięcia krwi w wątrobie - po wyczerpaniu zapasów witaminy K1 dochodzi do niekontrolowanego krwawienia wewnętrznego.",
+      "symptoms": ["osłabienie", "bladość dziąseł", "krwawienie z nosa/dziąseł", "krew w moczu lub kale", "smoliste stolce", "siniaki na skórze/brzuchu", "kaszel, przyspieszony oddech", "duszność"],
+      "notes": "Objawy mogą być subtelne i opóźnione o kilka dni od spożycia - podejrzenie kontaktu z trutką wymaga natychmiastowej interwencji weterynaryjnej, nawet bez widocznych objawów.",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Anticoagulant Rodenticide Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/rodenticide-warfarin-poisoning-in-dogs"},
+        {"name": "Merck Veterinary Manual - Anticoagulant Rodenticide Poisoning in Animals", "url": "https://www.merckvetmanual.com/toxicology/rodenticide-poisoning/anticoagulant-rodenticide-poisoning-in-animals"}
+      ]
+    },
+    {
+      "id": "batteries",
+      "namePL": "Baterie (alkaliczne / guzikowe)",
+      "nameEN": "Batteries (alkaline / button cell)",
+      "aliases": ["bateria", "baterie", "baterie guzikowe", "battery", "batteries", "button battery"],
+      "category": "chemia domowa",
+      "riskLevel": 3,
+      "mechanism": "Przegryzienie obudowy uwalnia żrący elektrolit alkaliczny, uszkadzający tkanki jamy ustnej i przewodu pokarmowego; baterie guzikowe dodatkowo generują prąd elektryczny powodujący oparzenia w miejscu kontaktu ze śluzówką, nawet bez przegryzienia.",
+      "symptoms": ["ślinienie", "owrzodzenia jamy ustnej", "wymioty", "brak apetytu", "ból przy przełykaniu", "ryzyko niedrożności przewodu pokarmowego"],
+      "notes": "Połkniętej baterii NIE należy próbować usuwać poprzez wywoływanie wymiotów - żrąca zawartość może dodatkowo uszkodzić przełyk przy powrocie. Konieczna natychmiastowa ocena weterynaryjna.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Batteries", "url": "https://www.petpoisonhelpline.com/poison/batteries/"},
+        {"name": "ASPCA - The Dangers of Batteries and Your Pets", "url": "https://www.aspca.org/news/dangers-batteries-and-your-pets-what-you-should-know"}
+      ]
+    },
+    {
+      "id": "nail_products_solvents",
+      "namePL": "Lakiery do paznokci i zmywacze",
+      "nameEN": "Nail polish and nail polish remover",
+      "aliases": ["lakier do paznokci", "zmywacz do paznokci", "aceton", "toluen", "formaldehyd", "nail polish", "nail polish remover", "acetone", "toluene", "formaldehyde"],
+      "category": "kosmetyki",
+      "riskLevel": 2,
+      "mechanism": "Aceton (w zmywaczach) i rozpuszczalniki takie jak toluen czy formaldehyd (w lakierach) działają drażniąco na przewód pokarmowy i mogą być wchłaniane ogólnoustrojowo w większych ilościach.",
+      "symptoms": ["podrażnienie jamy ustnej i żołądka", "wymioty", "nadmierne ślinienie", "w większych ilościach: osłabienie, brak koordynacji ruchowej"],
+      "sources": [
+        {"name": "PetMD - 19 Beauty Products That Could Harm Your Pet", "url": "https://www.petmd.com/dog/slideshows/19-beauty-products-could-harm-your-pet"}
+      ]
+    },
+    {
+      "id": "fluoride_toothpaste",
+      "namePL": "Pasta do zębów dla ludzi (fluorek sodu)",
+      "nameEN": "Human toothpaste (sodium fluoride)",
+      "aliases": ["pasta do zębów", "fluorek sodu", "fluor", "toothpaste", "sodium fluoride", "fluoride"],
+      "category": "kosmetyki",
+      "riskLevel": 3,
+      "mechanism": "Fluorek sodu w stężeniach typowych dla past do zębów dla ludzi jest znacznie wyższy niż tolerowany przez psy - nadmiar zaburza gospodarkę wapniową i wpływa na pracę serca.",
+      "symptoms": ["silne wymioty", "nadmierne ślinienie", "ból brzucha", "zaburzenia rytmu serca", "obniżone ciśnienie krwi"],
+      "notes": "Nie mylić z zagrożeniem ksylitolowym - część past do zębów dla ludzi zawiera JEDNOCZEŚNIE fluor i ksylitol, co sumuje ryzyko. Pasty do zębów dla psów nie zawierają fluoru ani ksylitolu i są bezpieczne.",
+      "sources": [
+        {"name": "MSD Veterinary Manual - Toxicoses From Household Cleaners and Personal Care Products", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-household-cleaners-and-personal-care-products-in-animals"}
+      ]
+    },
+    {
+      "id": "minoxidil_hair_growth",
+      "namePL": "Produkty na porost włosów (minoksydyl)",
+      "nameEN": "Hair growth products (minoxidil)",
+      "aliases": ["minoksydyl", "produkt na porost włosów", "minoxidil", "hair growth product", "rogaine"],
+      "category": "kosmetyki",
+      "riskLevel": 4,
+      "mechanism": "Minoksydyl jest silnym rozszerzaczem naczyń krwionośnych - u psów (i szczególnie u kotów) nawet niewielka ilość może wywołać poważne zaburzenia pracy serca i drastyczny spadek ciśnienia krwi.",
+      "symptoms": ["letarg", "wymioty", "przyspieszone i mocne tętno", "znaczny spadek ciśnienia krwi", "w ciężkich przypadkach: niewydolność serca, zgon"],
+      "notes": "Zagrożenie dotyczy nie tylko połknięcia produktu, ale też kontaktu ze skórą osoby, która niedawno go zaaplikowała (np. zlizanie przez zwierzę).",
+      "sources": [
+        {"name": "Pet Poison Helpline - Hair Loss Drug Can be Deadly to Pets", "url": "https://www.petpoisonhelpline.com/toxintails/hair-loss-drug-can-be-deadly-to-pets/"}
+      ]
+    },
+    {
+      "id": "petroleum_jelly_lotion",
+      "namePL": "Wazelina i balsamy/kremy nawilżające",
+      "nameEN": "Petroleum jelly and moisturizing lotions",
+      "aliases": ["wazelina", "balsam do ciała", "krem nawilżający", "petroleum jelly", "lotion", "moisturizer"],
+      "category": "kosmetyki",
+      "riskLevel": 2,
+      "mechanism": "Głównie działanie przeczyszczające przy spożyciu większej ilości; zapachowe wersje produktów są szczególnie atrakcyjne dla zwierząt, co zwiększa ryzyko spożycia większej porcji.",
+      "symptoms": ["łagodne do umiarkowanych dolegliwości żołądkowo-jelitowe", "biegunka o działaniu przeczyszczającym", "ryzyko zachłystowego zapalenia płuc przy wymiotach"],
+      "sources": [
+        {"name": "ASPCA - Poisonous Household Products", "url": "https://www.aspca.org/pet-care/aspca-poison-control/poisonous-household-products"}
+      ]
+    },
+    {
+      "id": "mothballs_naphthalene",
+      "namePL": "Kulki na mole (naftalina)",
+      "nameEN": "Mothballs (naphthalene)",
+      "aliases": ["kulki na mole", "naftalina", "naphthalene", "mothballs", "paradichlorobenzen", "paradichlorobenzene"],
+      "category": "chemia domowa",
+      "riskLevel": 3,
+      "mechanism": "Naftalina uszkadza czerwone krwinki, prowadząc do anemii hemolitycznej i methemoglobinemii; kulki rozpuszczają się powoli, więc objawy mogą pojawić się z opóźnieniem nawet kilkudniowym.",
+      "symptoms": ["wymioty", "letarg", "brak apetytu", "oddech o zapachu mothballi", "blade lub brązowe dziąsła", "w cięższych przypadkach: napady drgawkowe, uszkodzenie wątroby lub nerek"],
+      "notes": "Zagrożenie może wynikać nie tylko z połknięcia, ale też z wdychania oparów lub kontaktu ze skórą. Naftalina jest około dwukrotnie bardziej toksyczna niż paradichlorobenzen (drugi popularny składnik kulek na mole).",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Mothball Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/mothball-toxicity-in-dogs"},
+        {"name": "PetMD - Mothball Poisoning in Dogs and Cats", "url": "https://www.petmd.com/dog/conditions/toxicity/mothball-toxicity-pets-what-you-need-know"}
+      ]
+    }
+  ],
+  "matchingNotes": {
+    "description": "Wytyczne implementacyjne dla modułu dopasowania tekstu OCR do bazy (Faza 3 planu).",
+    "rules": [
+      "Dopasowanie powinno uwzględniać zarówno nazwy PL/EN, aliasy słowne, jak i numery E - są to trzy niezależne sposoby zapisu tego samego składnika na etykietach.",
+      "Numery E wymagają dopasowania dokładnego (nie fuzzy), ponieważ różnica jednej cyfry zmienia substancję (np. E950 vs E967 to zupełnie różne poziomy ryzyka).",
+      "Nazwy słowne wymagają dopasowania rozmytego (fuzzy matching) ze względu na błędy OCR i odmiany językowe.",
+      "W przypadku znalezienia kilku dopasowanych składników w jednym produkcie, ogólny werdykt raportu powinien odpowiadać najwyższemu wykrytemu poziomowi ryzyka (zasada 'najsłabszego ogniwa')."
+    ]
+  }
+}

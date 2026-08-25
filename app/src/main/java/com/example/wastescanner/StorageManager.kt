@@ -3,14 +3,10 @@ package com.example.wastescanner
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.io.File
 import java.io.FileOutputStream
 
 object StorageManager {
-    private const val PREFS_NAME = "waste_scanner_prefs"
-    private const val HISTORY_KEY = "scan_history"
 
     // 1. Zapisuje zrobione zdjęcie jako plik JPG do ukrytego folderu aplikacji
     fun saveBitmap(context: Context, bitmap: Bitmap, fileName: String): String {
@@ -28,30 +24,40 @@ object StorageManager {
         return if (file.exists()) BitmapFactory.decodeFile(file.absolutePath) else null
     }
 
-    // 3. Tłumaczy całą listę historii na tekst (JSON) i zapisuje w telefonie
-    fun saveHistory(context: Context, historyList: List<HistoryItem>) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val jsonString = Gson().toJson(historyList)
-        prefs.edit().putString(HISTORY_KEY, jsonString).apply()
-    }
-
-    // 4. Przy uruchamianiu aplikacji: odczytuje tekst i odtwarza listę historii
-    fun loadHistory(context: Context): List<HistoryItem> {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val jsonString = prefs.getString(HISTORY_KEY, null) ?: return emptyList()
-        val type = object : TypeToken<List<HistoryItem>>() {}.type
-        return try {
-            Gson().fromJson(jsonString, type)
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    fun saveDebugIsolationBitmap(context: Context, bitmap: Bitmap) {
-        val file = File(context.filesDir, "debug_isolation.png")
+    // 3. Debug: zapisuje dowolną bitmapę pod wskazaną nazwą pliku - do wizualnej weryfikacji
+    // (np. pojedynczych wycinków słów z segmentacji). Wywołanie musi być owinięte w
+    // `if (BuildConfig.DEBUG)` w miejscu użycia. Ten sam zestaw nazw jest nadpisywany przy
+    // każdym skanie, więc nie zaśmieca pamięci urządzenia.
+    fun saveDebugBitmap(context: Context, bitmap: Bitmap, fileName: String): String {
+        val file = File(context.filesDir, "$fileName.jpg")
         FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, out)
         }
+        return file.absolutePath
+    }
+
+    // 3b. Zachowane dla kompatybilności z istniejącymi wywołaniami.
+    fun saveDebugOcrInputBitmap(context: Context, bitmap: Bitmap): String =
+        saveDebugBitmap(context, bitmap, "debug_ocr_input")
+
+    // 4. Serializuje historię skanów do CSV (eksport przez ScanHistoryScreen).
+    fun generateCsvData(historyList: List<HistoryItem>): String {
+        val builder = StringBuilder()
+        builder.append("Data,Werdykt_ogolny,Liczba_skladnikow,Skladniki_ryzykowne,Czas_AI_ms,Komentarz\n")
+
+        historyList.forEach { item ->
+            val report = item.report
+            val riskyIngredients = report.ingredients
+                .filter { it.riskLevel != RiskLevel.SAFE }
+                .joinToString(separator = "; ") { it.matchedName }
+                .ifEmpty { "Brak" }
+            val comment = report.comment?.replace(",", ";")?.replace("\n", " ") ?: "Brak"
+
+            builder.append(
+                "${item.dateString},${report.overallRisk.labelPL},${report.ingredients.size}," +
+                        "$riskyIngredients,${report.executionTimeMs},$comment\n"
+            )
+        }
+        return builder.toString()
     }
 }
-

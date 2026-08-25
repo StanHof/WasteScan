@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
@@ -22,6 +23,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.wastescanner.ui.theme.WasteScannerTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,15 +60,50 @@ fun WasteAppNavigation() {
     val context = LocalContext.current
     val navController = rememberNavController()
     var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
-    var historyReportToShow by remember { mutableStateOf<AnalysisReport?>(null) }
+    var historyReportToShow by remember { mutableStateOf<IngredientSafetyReport?>(null) }
     val historyItems = remember { mutableStateListOf<HistoryItem>() }
 
-    // NOWOŚĆ: Globalny stan wybranego modelu (domyślnie lokalny)
     var isCloudModeSelected by remember { mutableStateOf(false) }
 
+    // Hoisted here (above NavHost) zamiast wewnątrz composable("result_screen") - ten blok jest
+    // częścią kompozycji, która żyje przez cały czas trwania sesji (WasteAppNavigation nie jest
+    // usuwana z kompozycji podczas nawigacji między ekranami, w przeciwieństwie do zawartości
+    // poszczególnych composable("route") { ... }). Gdyby remember() był w środku bloku
+    // "result_screen", oba interpretery TFLite (EAST + CRNN) byłyby wczytywane z assets od nowa
+    // przy KAŻDYM wejściu na ten ekran (każde nowe zdjęcie, każdy podgląd z historii) - tutaj
+    // wczytują się tylko raz na sesję i ponownie wyłącznie przy realnej zmianie trybu lokalny/chmura.
+    val activeClassifier: ClassifierStrategy = remember(isCloudModeSelected) {
+        if (isCloudModeSelected) CloudIngredientClassifier(context) else LocalIngredientClassifier(
+            context,
+            TfliteTextRecognizerEngine(context, EastTextRegionDetector(context))
+        )
+    }
+
+    val database = remember { AppDatabase.getDatabase(context) }
+    val dao = database.historyDao()
+    val coroutineScope = rememberCoroutineScope()
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri ->
+        uri?.let {
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    val csvData = StorageManager.generateCsvData(historyItems)
+                    context.contentResolver.openOutputStream(it)?.use { stream ->
+                        stream.write(csvData.toByteArray())
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+
     LaunchedEffect(Unit) {
-        val savedHistory = StorageManager.loadHistory(context)
+        val savedHistory = dao.getAllHistory()
         historyItems.addAll(savedHistory)
+
     }
 
     NavHost(
@@ -90,29 +128,23 @@ fun WasteAppNavigation() {
         }
 
         composable("result_screen") {
-            val activeClassifier: ClassifierStrategy = remember(isCloudModeSelected) {
-                if (isCloudModeSelected) CloudWasteClassifier() else LocalWasteClassifier(context)
-            }
-
             ResultScreen(
                 bitmap = capturedImage,
                 initialReport = historyReportToShow,
                 classifier = activeClassifier,
-                onSaveToHistory = { label, confidence, date, report ->
-                    val timestamp = System.currentTimeMillis()
+                onSaveToHistory = { date, report ->
                     val savedImagePath = capturedImage?.let {
-                        StorageManager.saveBitmap(context, it, "scan_$timestamp")
+                        StorageManager.saveBitmap(context, it, "scan_${System.currentTimeMillis()}")
                     }
                     val newItem = HistoryItem(
-                        id = timestamp,
-                        label = label,
-                        confidence = confidence,
                         dateString = date,
                         imagePath = savedImagePath,
-                        analysisReport = report
+                        report = report
                     )
-                    historyItems.add(newItem)
-                    StorageManager.saveHistory(context, historyItems)
+                    historyItems.add(0, newItem)
+                    coroutineScope.launch {
+                        dao.insertItem(newItem)
+                    }
                 },
                 onTryAgain = {
                     capturedImage = null
@@ -127,8 +159,12 @@ fun WasteAppNavigation() {
                 historyList = historyItems,
                 onItemClick = { item ->
                     capturedImage = StorageManager.loadBitmap(item.imagePath)
-                    historyReportToShow = item.analysisReport
+                    historyReportToShow = item.report
                     navController.navigate("result_screen")
+                },
+                onExportClick = { // --- NOWOŚĆ: Akcja wywołująca zapis ---
+                    // Uruchamiamy systemowe okno z domyślną nazwą pliku
+                    exportLauncher.launch("badania_odpady_${System.currentTimeMillis()}.csv")
                 },
                 onBack = { navController.popBackStack() }
             )
