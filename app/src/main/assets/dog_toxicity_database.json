@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "lastUpdated": "2026-08-19",
+  "lastUpdated": "2026-08-20",
   "species": "dog",
   "disclaimer": "Baza ma charakter pomocniczy/edukacyjny i nie zastępuje konsultacji z lekarzem weterynarii ani kontaktu z centrum kontroli zatruć zwierząt. W razie podejrzenia spożycia toksycznej substancji przez psa należy niezwłocznie skontaktować się z weterynarzem.",
   "riskLevels": {
@@ -534,6 +534,138 @@
       "sources": [
         {"name": "VCA Animal Hospitals - Mothball Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/mothball-toxicity-in-dogs"},
         {"name": "PetMD - Mothball Poisoning in Dogs and Cats", "url": "https://www.petmd.com/dog/conditions/toxicity/mothball-toxicity-pets-what-you-need-know"}
+      ]
+    },
+    {
+      "id": "nsaid_human",
+      "namePL": "Niesteroidowe leki przeciwzapalne dla ludzi (ibuprofen, aspiryna, naproksen)",
+      "nameEN": "Human NSAIDs (ibuprofen, aspirin, naproxen)",
+      "aliases": ["ibuprofen", "aspiryna", "kwas acetylosalicylowy", "naproksen", "ibuprom", "nurofen", "polopiryna", "aleve", "advil", "motrin", "nsaid", "naproxen", "aspirin"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Psy są znacznie bardziej wrażliwe na NLPZ dla ludzi niż ludzie - nawet niewielkie, pozornie 'ludzkie' dawki hamują enzymy chroniące błonę śluzową żołądka i przepływ krwi przez nerki.",
+      "symptoms": ["wymioty (czasem z krwią)", "smoliste stolce", "ból brzucha", "owrzodzenia żołądka i jelit", "uszkodzenie nerek", "w ciężkich przypadkach: napady drgawkowe, śpiączka"],
+      "notes": "Toksyczność występuje przy dawkach uznawanych za bezpieczne dla ludzi - nie ma 'bezpiecznej' dawki ludzkiego NLPZ dla psa bez konsultacji z weterynarzem.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Ibuprofen", "url": "https://www.petpoisonhelpline.com/poison/ibuprofen/"},
+        {"name": "VCA Animal Hospitals - Ibuprofen Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/ibuprofen-poisoning-in-dogs"}
+      ]
+    },
+    {
+      "id": "acetaminophen_paracetamol",
+      "namePL": "Paracetamol (acetaminofen)",
+      "nameEN": "Acetaminophen (paracetamol)",
+      "aliases": ["paracetamol", "acetaminofen", "apap", "panadol", "acetaminophen", "tylenol"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Psy metabolizują paracetamol inaczej niż ludzie - powstające metabolity uszkadzają wątrobę oraz zdolność czerwonych krwinek do przenoszenia tlenu.",
+      "symptoms": ["osłabienie", "przyspieszony oddech", "duszność", "sinoniebieskie zabarwienie skóry/błon śluzowych (methemoglobinemia)", "żółtaczka", "wymioty", "obniżona temperatura ciała", "obrzęk pyska lub łap"],
+      "notes": "Uszkodzenie wątroby może rozwinąć się dopiero po kilku dniach od spożycia nawet niewielkiej dawki - opóźnienie objawów nie oznacza braku zagrożenia.",
+      "sources": [
+        {"name": "VCA Animal Hospitals - Acetaminophen Toxicity in Dogs", "url": "https://vcahospitals.com/know-your-pet/acetaminophen-toxicity-in-dogs"},
+        {"name": "PetMD - Tylenol (Acetaminophen) Toxicity in Dogs", "url": "https://www.petmd.com/dog/poisoning/tylenol-acetaminophen-toxicity-in-dogs"}
+      ]
+    },
+    {
+      "id": "adhd_stimulant_medication",
+      "namePL": "Leki na ADHD (metylofenidat, amfetamina)",
+      "nameEN": "ADHD stimulant medications (methylphenidate, amphetamine)",
+      "aliases": ["metylofenidat", "chlorowodorek metylofenidatu", "amfetamina", "koncerta", "ritalin", "medikinet", "methylphenidate", "amphetamine", "adderall"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Silne pobudzenie ośrodkowego układu nerwowego i układu sercowo-naczyniowego - psy są bardzo wrażliwe, nawet niewielka dawka (pojedyncza tabletka) może wywołać poważne objawy.",
+      "symptoms": ["silne pobudzenie", "drżenia mięśniowe", "napady drgawkowe", "znacznie przyspieszone tętno", "podwyższona temperatura ciała", "nadciśnienie"],
+      "notes": "Nawet niska dawka (rzędu pojedynczej tabletki dla dziecka) może być groźna dla małego psa. Preparaty o przedłużonym uwalnianiu (np. Concerta) mogą dawać opóźnione lub przedłużone w czasie objawy.",
+      "sources": [
+        {"name": "ASPCA - Human Meds Top ASPCA's List of Harmful Pet Toxins", "url": "https://www.aspca.org/about-us/press-releases/human-meds-top-aspcas-list-harmful-pet-toxins-3rd-straight-year"},
+        {"name": "VCA Animal Hospitals - Behavioral Health Medication Poisoning", "url": "https://vcahospitals.com/know-your-pet/behavioral-health-medication-poisoning"}
+      ]
+    },
+    {
+      "id": "antidepressants_human",
+      "namePL": "Leki przeciwdepresyjne dla ludzi (SSRI, SNRI, trójpierścieniowe)",
+      "nameEN": "Human antidepressants (SSRIs, SNRIs, tricyclics)",
+      "aliases": ["sertralina", "fluoksetyna", "citalopram", "wenlafaksyna", "amitryptylina", "escitalopram", "zoloft", "prozac", "cymbalta", "lexapro", "effexor", "antydepresanty"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Wysokie dawki prowadzą do nagromadzenia serotoniny lub innych neuroprzekaźników we krwi ('zespół serotoninowy'), nadmiernie pobudzając ośrodkowy układ nerwowy.",
+      "symptoms": ["drżenia mięśniowe", "brak koordynacji ruchowej", "napady drgawkowe", "nadpobudliwość", "podwyższona temperatura ciała", "znacznie przyspieszone tętno"],
+      "sources": [
+        {"name": "VCA Animal Hospitals - Behavioral Health Medication Poisoning", "url": "https://vcahospitals.com/know-your-pet/behavioral-health-medication-poisoning"},
+        {"name": "ASPCA - Human Meds Top ASPCA's List of Harmful Pet Toxins", "url": "https://www.aspca.org/about-us/press-releases/human-meds-top-aspcas-list-harmful-pet-toxins-3rd-straight-year"}
+      ]
+    },
+    {
+      "id": "baclofen",
+      "namePL": "Baklofen (lek zwiotczający mięśnie)",
+      "nameEN": "Baclofen (muscle relaxant)",
+      "aliases": ["baklofen", "baclofen"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Silnie hamuje ośrodkowy układ nerwowy i znosi odruch wymiotny/kaszlowy (ryzyko zachłyśnięcia); ma bardzo wąski margines bezpieczeństwa - nawet niewielka dawka może wywołać ciężkie zatrucie.",
+      "symptoms": ["silne uspokojenie", "chwiejny chód ('jak pijany')", "nadmierne ślinienie", "wolne tętno", "niskie ciśnienie krwi", "bardzo niska temperatura ciała", "napady drgawkowe", "trudności w oddychaniu", "zgon"],
+      "notes": "Objawy mogą wystąpić już po 15 minutach lub dopiero po 7 godzinach od spożycia i utrzymywać się od kilku godzin do kilku dni - jeden z najgroźniejszych powszechnie dostępnych leków dla psów.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Baclofen", "url": "https://www.petpoisonhelpline.com/poison/baclofen/"}
+      ]
+    },
+    {
+      "id": "cardiovascular_medications",
+      "namePL": "Leki kardiologiczne (beta-blokery, blokery kanału wapniowego)",
+      "nameEN": "Cardiovascular medications (beta blockers, calcium channel blockers)",
+      "aliases": ["metoprolol", "bisoprolol", "propranolol", "amlodypina", "werapamil", "diltiazem", "beta-bloker", "bloker kanału wapniowego", "beta blocker", "calcium channel blocker"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Zaburzają przewodnictwo elektryczne i kurczliwość serca - mają bardzo wąski margines bezpieczeństwa, więc nawet niewielkie przedawkowanie może być zagrażające życiu.",
+      "symptoms": ["pobudzenie", "wymioty", "biegunka", "ślinienie", "drżenia", "znacznie spowolnione tętno (bradykardia)", "silny spadek ciśnienia krwi", "niewydolność serca", "wtórna ostra niewydolność nerek"],
+      "sources": [
+        {"name": "Pet Poison Helpline - Calcium Channel Blockers", "url": "https://www.petpoisonhelpline.com/poison/calcium-channel-blockers/"},
+        {"name": "Pet Poison Helpline - Beta-blockers", "url": "https://www.petpoisonhelpline.com/poison/beta-blockers/"}
+      ]
+    },
+    {
+      "id": "benzodiazepines_sleep_aids",
+      "namePL": "Benzodiazepiny i tabletki nasenne",
+      "nameEN": "Benzodiazepines and sleep aids",
+      "aliases": ["diazepam", "relanium", "lorazepam", "alprazolam", "xanax", "zolpidem", "benzodiazepina", "tabletki nasenne", "sleep aid"],
+      "category": "leki",
+      "riskLevel": 3,
+      "mechanism": "Silnie hamują ośrodkowy układ nerwowy i oddychanie; u kotów mogą dodatkowo wywołać ostrą niewydolność wątroby (mniejsze ryzyko u psów).",
+      "symptoms": ["osłabienie", "brak koordynacji ruchowej", "dezorientacja", "nadmierne uspokojenie", "spowolniony oddech", "w cięższych przypadkach: napady drgawkowe, śpiączka, niewydolność oddechowa"],
+      "notes": "Objawy pojawiają się zwykle w ciągu 10-60 minut i mogą utrzymywać się 12-24h.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Sleep Aids", "url": "https://www.petpoisonhelpline.com/poison/sleep-aids/"},
+        {"name": "Pet Poison Helpline - Benzodiazepines", "url": "https://www.petpoisonhelpline.com/poison/benzodiazepines/"}
+      ]
+    },
+    {
+      "id": "vitamin_d3_cholecalciferol",
+      "namePL": "Suplementy witaminy D3 (cholekalcyferol)",
+      "nameEN": "Vitamin D3 supplements (cholecalciferol)",
+      "aliases": ["witamina d3", "cholekalcyferol", "vitamin d3", "cholecalciferol"],
+      "category": "leki",
+      "riskLevel": 4,
+      "mechanism": "Ten sam związek jest aktywnym składnikiem niektórych silnych trutek na gryzonie - przedawkowanie prowadzi do gwałtownego wzrostu poziomu wapnia i fosforu we krwi, powodując mineralizację (zwapnienie) nerek, serca i płuc.",
+      "symptoms": ["wymioty", "brak apetytu", "biegunka", "nadmierne pragnienie i oddawanie moczu", "letarg", "w ciężkich przypadkach: ostra niewydolność nerek"],
+      "notes": "Objawy hiperkalcemii mogą rozwinąć się dopiero po 18-72h od spożycia - opóźnienie nie oznacza braku zagrożenia. Ryzyko dotyczy zarówno suplementów dla ludzi, jak i (jeszcze bardziej) trutek na gryzonie na bazie cholekalcyferolu.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Cholecalciferol", "url": "https://www.petpoisonhelpline.com/poison/cholecalciferol/"},
+        {"name": "VCA Animal Hospitals - Cholecalciferol Vitamin D3 Rodenticide Poisoning", "url": "https://vcahospitals.com/know-your-pet/cholecalciferol-vitamin-d3-rodenticide-poisoning"}
+      ]
+    },
+    {
+      "id": "marijuana_thc",
+      "namePL": "Marihuana / THC (susz, olejki, produkty spożywcze z konopi)",
+      "nameEN": "Marijuana / THC (edibles, oils, cannabis products)",
+      "aliases": ["marihuana", "thc", "tetrahydrokannabinol", "susz", "olej cbd", "cannabis", "marijuana", "edible"],
+      "category": "leki",
+      "riskLevel": 3,
+      "mechanism": "Psy mają więcej receptorów kannabinoidowych w mózgu niż ludzie, przez co są znacznie bardziej wrażliwe na THC niż ludzie przy tej samej relatywnej dawce.",
+      "symptoms": ["senność/osłabienie", "rozszerzone źrenice", "zaburzenia równowagi i chodu", "nietrzymanie moczu", "nadwrażliwość na dźwięk/ruch", "drżenia", "wolne tętno (bradykardia)", "obniżona lub podwyższona temperatura ciała"],
+      "notes": "Produkty spożywcze (np. ciastka z marihuaną) mogą opóźniać wystąpienie objawów do 3-4h ze względu na wolniejsze opróżnianie żołądka przy wysokiej zawartości tłuszczu. Rzadko śmiertelne u psów, ale udokumentowano zgony po spożyciu silnie skoncentrowanych produktów o przeznaczeniu medycznym.",
+      "sources": [
+        {"name": "Pet Poison Helpline - My Dog Ate an Edible", "url": "https://www.petpoisonhelpline.com/pet-tips/my-dog-ate-an-edible/"},
+        {"name": "VCA Animal Hospitals - THC/CBD Poisoning", "url": "https://vcahospitals.com/know-your-pet/thccbd-poisoning"}
       ]
     }
   ],
