@@ -73,10 +73,12 @@ class EastTextDetector(context: Context, modelFileName: String = "east_text_dete
         private const val MEAN_G = 116.78f
         private const val MEAN_B = 103.94f
         private const val DOWNSAMPLE_FACTOR = 4f // wejście/wyjście EAST: 320x320 -> 80x80
+        private const val INTERPRETER_THREAD_COUNT = 4
     }
 
     private val interpreter: Interpreter? = try {
-        Interpreter(FileUtil.loadMappedFile(context, modelFileName)).also { loaded ->
+        val options = Interpreter.Options().apply { setNumThreads(INTERPRETER_THREAD_COUNT) }
+        Interpreter(FileUtil.loadMappedFile(context, modelFileName), options).also { loaded ->
             Log.d(TAG, "Model EAST wczytany. Wejście: ${loaded.getInputTensor(0).shape().toList()}")
             for (i in 0 until loaded.outputTensorCount) {
                 Log.d(TAG, "  output[$i]: shape=${loaded.getOutputTensor(i).shape().toList()}, dataType=${loaded.getOutputTensor(i).dataType()}")

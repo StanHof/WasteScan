@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -56,6 +57,7 @@ fun CameraScreen(
     isCloudMode: Boolean,
     onModeChange: (Boolean) -> Unit,
     onHistoryClick: () -> Unit,
+    onBenchmarkClick: () -> Unit,
     onPhotoTaken: (Bitmap) -> Unit
 ) {
     val context = LocalContext.current
@@ -169,20 +171,28 @@ fun CameraScreen(
                 )
             }
 
-            // --- PRZYCISK HISTORII (NA GÓRZE PO PRAWEJ) ---
-            IconButton(
-                onClick = onHistoryClick,
+            // --- PRZYCISKI HISTORII I BENCHMARKU (NA GÓRZE PO PRAWEJ) ---
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
                     .statusBarsPadding()
             ) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = "Historia skanów",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
+                IconButton(onClick = onBenchmarkClick, modifier = Modifier.padding(top = 16.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Science,
+                        contentDescription = "Porównanie lokalny/chmura (benchmark)",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+                IconButton(onClick = onHistoryClick, modifier = Modifier.padding(top = 16.dp, end = 16.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = "Historia skanów",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
 
             // --- 3. DOLNY PANEL INTERFEJSU ---

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "lastUpdated": "2026-08-20",
+  "lastUpdated": "2026-09-02",
   "species": "dog",
   "disclaimer": "Baza ma charakter pomocniczy/edukacyjny i nie zastępuje konsultacji z lekarzem weterynarii ani kontaktu z centrum kontroli zatruć zwierząt. W razie podejrzenia spożycia toksycznej substancji przez psa należy niezwłocznie skontaktować się z weterynarzem.",
   "riskLevels": {
@@ -666,6 +666,66 @@
       "sources": [
         {"name": "Pet Poison Helpline - My Dog Ate an Edible", "url": "https://www.petpoisonhelpline.com/pet-tips/my-dog-ate-an-edible/"},
         {"name": "VCA Animal Hospitals - THC/CBD Poisoning", "url": "https://vcahospitals.com/know-your-pet/thccbd-poisoning"}
+      ]
+    },
+    {
+      "id": "sucralose",
+      "namePL": "Sukraloza",
+      "nameEN": "Sucralose",
+      "aliases": ["sukraloza", "sucralose", "E955", "splenda"],
+      "category": "słodzik",
+      "riskLevel": 2,
+      "mechanism": "Niekaloryczny słodzik w większości wydalany w postaci niezmienionej; w przeciwieństwie do ksylitolu nie wywołuje gwałtownego uwolnienia insuliny ani hipoglikemii, ale u psów może zaburzać florę jelitową i podrażniać przewód pokarmowy, szczególnie przy większych ilościach.",
+      "symptoms": ["biegunka", "wymioty", "wzdęcia", "dyskomfort trawienny"],
+      "notes": "WAŻNE: nie mylić z ksylitolem (E967, poziom ryzyka 4). Sukraloza (E955) ma znacznie niższe ryzyko - głównym problemem są dolegliwości żołądkowo-jelitowe i wpływ na mikrobiom, nie ostre zatrucie. Częsta w odżywkach białkowych, suplementach 'bez cukru', napojach izotonicznych, gumach i produktach light.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Are Artificial Sweeteners Poisonous to Dogs and Cats?", "url": "https://www.petpoisonhelpline.com/blog/artificial-sweeteners-dogs-cats/"},
+        {"name": "ASPCA - Animal Poison Control", "url": "https://www.aspca.org/pet-care/animal-poison-control"}
+      ]
+    },
+    {
+      "id": "zinc",
+      "namePL": "Cynk / tlenek cynku",
+      "nameEN": "Zinc / zinc oxide",
+      "aliases": ["cynk", "tlenek cynku", "zinc", "zinc oxide", "siarczan cynku", "zinc sulfate", "glukonian cynku", "zinc gluconate"],
+      "category": "inne",
+      "riskLevel": 3,
+      "mechanism": "Nadmiar jonów cynku uszkadza czerwone krwinki (anemia hemolityczna) i działa drażniąco na przewód pokarmowy. Typowe źródła: monety (grosze bite po 1992 r.), nakrętki i ocynkowany metal, kremy/pasty z tlenkiem cynku (np. na odparzenia pieluszkowe), suplementy cynku.",
+      "symptoms": ["wymioty", "biegunka", "brak apetytu", "osłabienie", "blade lub brązowe dziąsła", "ciemny/pomarańczowy mocz (hemoliza)", "żółtaczka", "przyspieszony oddech", "w ciężkich przypadkach: niewydolność nerek lub wątroby"],
+      "notes": "Śladowy cynk dodawany do żywności i suplementów jako mikroskładnik (np. 'tlenek cynku' w napojach witaminizowanych) nie jest groźny. Realne ryzyko to połknięcie przedmiotów metalowych, maści z wysoką zawartością tlenku cynku oraz przedawkowanie tabletek z cynkiem. Metalowy przedmiot w żołądku wymaga pilnego usunięcia - cynk uwalnia się w kwaśnym środowisku żołądka.",
+      "sources": [
+        {"name": "Pet Poison Helpline - Zinc", "url": "https://www.petpoisonhelpline.com/poison/zinc/"},
+        {"name": "VCA Animal Hospitals - Zinc Poisoning in Dogs", "url": "https://vcahospitals.com/know-your-pet/zinc-poisoning-in-dogs"}
+      ]
+    },
+    {
+      "id": "copper",
+      "namePL": "Miedź (nadmiar w diecie / związki miedzi)",
+      "nameEN": "Copper (dietary excess / copper compounds)",
+      "aliases": ["miedź", "copper", "kompleksy miedziowe chlorofili", "kompleksy miedziowe chlorofilin", "copper complexes of chlorophylls", "E141", "siarczan miedzi", "copper sulfate", "glukonian miedzi", "copper gluconate"],
+      "category": "dodatki",
+      "riskLevel": 2,
+      "mechanism": "Miedź kumuluje się w wątrobie; przy predyspozycji genetycznej (m.in. bedlington terrier, west highland white terrier, labrador, dobermann) lub przewlekłym nadmiarze w diecie prowadzi do miedziozależnego zapalenia i marskości wątroby. Jednorazowe spożycie stężonych soli miedzi działa dodatkowo żrąco/drażniąco na przewód pokarmowy.",
+      "symptoms": ["przewlekle: brak apetytu", "spadek masy ciała", "wymioty", "żółtaczka", "powiększenie brzucha (wodobrzusze)", "apatia", "ostro (sole miedzi): wymioty, biegunka, ślinienie, ból brzucha"],
+      "notes": "Miedź jako barwnik spożywczy (E141 - kompleksy miedziowe chlorofili/chlorofilin) występuje śladowo i nie stanowi ostrego zagrożenia. Istotne ryzyko to przewlekła dieta zbyt bogata w miedź u ras predysponowanych oraz spożycie stężonych związków miedzi (środki grzybobójcze, algicydy).",
+      "sources": [
+        {"name": "Merck Veterinary Manual - Copper-Associated Hepatopathy in Dogs", "url": "https://www.merckvetmanual.com/digestive-system/hepatic-disease-in-small-animals/copper-associated-hepatopathy-in-dogs"},
+        {"name": "ASPCA - Animal Poison Control", "url": "https://www.aspca.org/pet-care/animal-poison-control"}
+      ]
+    },
+    {
+      "id": "benzisothiazolinone_preservative",
+      "namePL": "Benzoizotiazolinon (BIT) i pokrewne izotiazolinony - konserwanty",
+      "nameEN": "Benzisothiazolinone (BIT) and related isothiazolinone preservatives",
+      "aliases": ["benzisothiazolinone", "benzoizotiazolinon", "1,2-benzoizotiazol-3(2h)-on", "1,2-benzisothiazol-3(2h)-one", "BIT", "metyloizotiazolinon", "methylisothiazolinone", "MIT", "izotiazolinony", "isothiazolinones"],
+      "category": "chemia domowa",
+      "riskLevel": 2,
+      "mechanism": "Izotiazolinony (BIT, MIT) to konserwanty stosowane w niskich stężeniach w środkach czystości, farbach i kosmetykach; działają miejscowo drażniąco na skórę, oczy i błony śluzowe oraz są znanymi alergenami kontaktowymi. Wchłanianie ogólnoustrojowe po połknięciu rozcieńczonego produktu jest niewielkie.",
+      "symptoms": ["ślinienie", "wymioty", "podrażnienie jamy ustnej i przełyku", "podrażnienie i łzawienie oczu przy kontakcie", "kontaktowe zapalenie skóry", "kaszel przy wdychaniu aerozolu"],
+      "notes": "Typowy składnik płynów do szyb, płynów uniwersalnych i mydeł w płynie w stężeniu ułamka procenta. Zlizanie niewielkiej ilości rozcieńczonego produktu zwykle daje jedynie przejściowe podrażnienie przewodu pokarmowego; większe ilości lub produkty skoncentrowane wymagają kontaktu z weterynarzem.",
+      "sources": [
+        {"name": "ASPCA - Poisonous Household Products", "url": "https://www.aspca.org/pet-care/aspca-poison-control/poisonous-household-products"},
+        {"name": "MSD Veterinary Manual - Toxicoses From Household Cleaners and Personal Care Products", "url": "https://www.msdvetmanual.com/toxicology/toxicoses-from-household-hazards/toxicoses-from-household-cleaners-and-personal-care-products-in-animals"}
       ]
     }
   ],

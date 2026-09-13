@@ -51,6 +51,19 @@ class TfliteTextRecognizerEngine(
 
     companion object {
         private const val TAG = "TfliteTextRecognizer"
+
+        // Wyłączone po zakończeniu diagnostyki EAST/segmentacji/dekodowania CTC (patrz sesja
+        // debugowania w historii projektu) - zapis KAŻDEGO wycinka słowa jako JPEG (jakość 95) +
+        // logowanie pełnej tablicy zdekodowanych indeksów per słowo było niezbędne do zdiagnozowania
+        // pipeline'u, ale przy zdjęciach z dużą ilością tekstu (setki wycinków) ten narzut sam w
+        // sobie zauważalnie wydłuża czas rozpoznawania. Włącz z powrotem tylko gdy aktywnie
+        // debugujesz nowy model/segmentację.
+        private const val LOG_PER_WORD_DIAGNOSTICS = false
+
+        // Więcej niż ok. 4 wątki zwykle nie przyspiesza już pojedynczej, małej inferencji CRNN
+        // (narzut na synchronizację zaczyna przeważać), a niższe wartości nie wykorzystują
+        // wielordzeniowych telefonów - 4 to bezpieczny, sprawdzony w praktyce kompromis.
+        private const val INTERPRETER_THREAD_COUNT = 4
     }
 
     // Zgodnie z konwencją CTC zakładamy, że ostatnia klasa wyjściowa modelu to "blank".
@@ -65,6 +78,7 @@ class TfliteTextRecognizerEngine(
     private val interpreter: Interpreter? = try {
         val options = Interpreter.Options().apply {
             addDelegate(org.tensorflow.lite.flex.FlexDelegate())
+            setNumThreads(INTERPRETER_THREAD_COUNT)
         }
         Interpreter(FileUtil.loadMappedFile(context, modelFileName), options).also { loaded ->
             // Diagnostyka zamiast zgadywania: model z wbudowanym CTC decode może już zwracać
@@ -80,6 +94,26 @@ class TfliteTextRecognizerEngine(
     } catch (e: Exception) {
         Log.e(TAG, "Nie udało się wczytać modelu '$modelFileName' z assets - silnik TFLite zwróci pustą listę słów.", e)
         null
+    }
+
+    // Kształty/typy tensorów i ImageProcessor zależą wyłącznie od WCZYTANEGO MODELU, nie od
+    // konkretnego wycinka słowa - liczone raz (lazy, przy pierwszym użyciu), zamiast od nowa przy
+    // każdym z setek wywołań recognizeSingleWord(). Poprzednio: 200 słów = 200x
+    // interpreter.getInputTensor(0)/getOutputTensor(0) + 200x nowy ImageProcessor.Builder().
+    private val inputWidth: Int by lazy { interpreter?.getInputTensor(0)?.shape()?.get(2) ?: 0 }
+    private val inputHeight: Int by lazy { interpreter?.getInputTensor(0)?.shape()?.get(1) ?: 0 }
+    private val inputDataType: DataType by lazy { interpreter?.getInputTensor(0)?.dataType() ?: DataType.FLOAT32 }
+    private val outputShape: IntArray by lazy { interpreter?.getOutputTensor(0)?.shape() ?: intArrayOf() }
+    private val outputDataType: DataType by lazy { interpreter?.getOutputTensor(0)?.dataType() ?: DataType.FLOAT32 }
+    private val imageProcessor: ImageProcessor by lazy {
+        ImageProcessor.Builder()
+            .add(TransformToGrayscaleOp())
+            .apply {
+                // Zweryfikowane w kodzie źródłowym keras_ocr/recognition.py (Recognizer.recognize):
+                // `image = image.astype("float32") / 255` - zakres [0, 1], NIE [-1, 1].
+                if (inputDataType == DataType.FLOAT32) add(NormalizeOp(0f, 255f))
+            }
+            .build()
     }
 
     private val alphabet: String = try {
@@ -157,7 +191,7 @@ class TfliteTextRecognizerEngine(
                     val paddedRect = padRect(wordRect, region.bitmap.width, region.bitmap.height)
                     val crop = safeCrop(region.bitmap, paddedRect) ?: continue
 
-                    if (BuildConfig.DEBUG) {
+                    if (BuildConfig.DEBUG && LOG_PER_WORD_DIAGNOSTICS) {
                         val path = StorageManager.saveDebugBitmap(context, crop, "debug_word_crop_$cropIndex")
                         Log.d(TAG, "  wycinek #$cropIndex (${crop.width}x${crop.height}) zapisany: $path")
                         cropIndex++
@@ -231,11 +265,9 @@ class TfliteTextRecognizerEngine(
 
     private fun recognizeSingleWord(interpreter: Interpreter, wordBitmap: Bitmap): String {
         return try {
-            val inputTensor = interpreter.getInputTensor(0)
-            val inputShape = inputTensor.shape() // oczekiwany kształt: [1, height, width, channels]
-            val inputHeight = inputShape[1]
-            val inputWidth = inputShape[2]
-            val inputDataType = inputTensor.dataType()
+            // inputWidth/inputHeight/inputDataType/outputShape/outputDataType/imageProcessor są
+            // teraz cache'owane na poziomie klasy (patrz `by lazy` przy deklaracji interpretera) -
+            // zależą tylko od wczytanego modelu, nie od tego konkretnego wycinka słowa.
 
             // Letterboxing zamiast zwykłego ResizeOp: ResizeOp rozciąga obraz do docelowych
             // wymiarów BEZ zachowania proporcji, co zniekształca kształt liter i jest bardzo
@@ -244,24 +276,9 @@ class TfliteTextRecognizerEngine(
             // proporcjonalnie i dopełniamy białym tłem do wymaganych wymiarów.
             val letterboxed = letterboxResize(wordBitmap, inputWidth, inputHeight)
 
-            val imageProcessorBuilder = ImageProcessor.Builder()
-                .add(TransformToGrayscaleOp())
-
-            if (inputDataType == DataType.FLOAT32) {
-                // Zweryfikowane w kodzie źródłowym keras_ocr/recognition.py (Recognizer.recognize):
-                // `image = image.astype("float32") / 255` - zakres [0, 1], NIE [-1, 1].
-                // NormalizeOp(mean, std) liczy (x - mean) / std, więc mean=0, std=255 daje x/255.
-                imageProcessorBuilder.add(NormalizeOp(0f, 255f))
-            }
-            val imageProcessor = imageProcessorBuilder.build()
-
             var tensorImage = TensorImage(inputDataType)
             tensorImage.load(letterboxed)
             tensorImage = imageProcessor.process(tensorImage)
-
-            val outputTensor = interpreter.getOutputTensor(0)
-            val outputShape = outputTensor.shape()
-            val outputDataType = outputTensor.dataType()
 
             when (outputDataType) {
                 DataType.INT64 -> {
@@ -311,7 +328,9 @@ class TfliteTextRecognizerEngine(
 
         val indices = LongArray(elementCount)
         outputBuffer.asLongBuffer().get(indices)
-        Log.d(TAG, "Zdekodowane indeksy (surowe, int64, shape=${outputShape.toList()}): ${indices.toList()}")
+        if (LOG_PER_WORD_DIAGNOSTICS) {
+            Log.d(TAG, "Zdekodowane indeksy (surowe, int64, shape=${outputShape.toList()}): ${indices.toList()}")
+        }
 
         val builder = StringBuilder()
         for (idx in indices) {

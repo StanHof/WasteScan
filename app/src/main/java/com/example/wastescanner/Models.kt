@@ -93,3 +93,36 @@ data class IngredientSafetyReport(
 interface ClassifierStrategy {
     suspend fun analyzeIngredients(bitmap: Bitmap): IngredientSafetyReport
 }
+
+/**
+ * Pojedynczy wpis zestawu testowego (ground truth) dla BenchmarkScreen - przygotowywany ręcznie
+ * przez człowieka poza aplikacją (przeczytanie etykiety i spisanie, które substancje z bazy
+ * wiedzy faktycznie na niej występują), a nie generowany automatycznie. `expectedSubstanceIds`
+ * musi używać dokładnie tych samych id, co pole "id" w dog_toxicity_database.json - to jedyny
+ * sposób, żeby wynik dało się automatycznie porównać z tym, co wykryła aplikacja.
+ *
+ * Wczytywany z pliku JSON (tablica takich obiektów) wybranego przez użytkownika, dopasowywany do
+ * zaimportowanych zdjęć po nazwie pliku (fileName).
+ */
+data class BenchmarkGroundTruthEntry(
+    val fileName: String,
+    val productName: String? = null,
+    val expectedSubstanceIds: List<String> = emptyList(),
+    val notes: String? = null
+)
+
+/**
+ * Wynik uruchomienia OBU strategii (lokalnej i chmurowej) na tym samym zdjęciu - używane przez
+ * BenchmarkScreen do masowego porównania (Faza 5 planu: ewaluacja local vs. cloud).
+ *
+ * UWAGA: to porównanie samo w sobie NIE liczy WER/CER (Word/Character Error Rate) - do tego
+ * potrzebny byłby osobno przygotowany tekst wzorcowy (transkrypcja etykiety), którego ten ekran
+ * nie zbiera. `groundTruth` (jeśli dopasowany z wczytanego manifestu) pozwala za to policzyc
+ * recall/precyzję na poziomie ROZPOZNANYCH SUBSTANCJI, nie pojedynczych słów.
+ */
+data class BenchmarkResult(
+    val imageLabel: String,
+    val localReport: IngredientSafetyReport,
+    val cloudReport: IngredientSafetyReport,
+    val groundTruth: BenchmarkGroundTruthEntry? = null
+)

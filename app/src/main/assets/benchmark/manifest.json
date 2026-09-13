@@ -1,0 +1,42 @@
+[
+  {
+    "fileName": "paracetamol.jpg",
+    "productName": "Paracetamol 500 mg (Laboratoria Polfa Łódź)",
+    "expectedSubstanceIds": ["acetaminophen_paracetamol"]
+  },
+  {
+    "fileName": "cheddar.jpg",
+    "productName": "Ser Cheddar wiórki (Mlekovita)",
+    "expectedSubstanceIds": ["milk_dairy", "excess_salt"]
+  },
+  {
+    "fileName": "cocoamix.jpg",
+    "productName": "Quick Cao - napój kakaowy instant",
+    "expectedSubstanceIds": ["theobromine_cocoa", "excess_salt", "zinc"]
+  },
+  {
+    "fileName": "creatin.jpg",
+    "productName": "Kreatyna jednowodna, jabłko i limonka (Bulk / Sports Supplements)",
+    "expectedSubstanceIds": ["sucralose", "copper"]
+  },
+  {
+    "fileName": "instantsoup.jpg",
+    "productName": "Knorr Pomidorowa z makaronem (zupa instant)",
+    "expectedSubstanceIds": ["allium", "milk_dairy", "excess_salt"]
+  },
+  {
+    "fileName": "medikinet.jpg",
+    "productName": "Medikinet CR 10 mg (chlorowodorek metylofenidatu)",
+    "expectedSubstanceIds": ["adhd_stimulant_medication"]
+  },
+  {
+    "fileName": "peanutbutter.jpg",
+    "productName": "Krem orzechowy gładki / Peanut butter smooth (Sante)",
+    "expectedSubstanceIds": ["excess_salt"]
+  },
+  {
+    "fileName": "windowwash.jpg",
+    "productName": "Płyn do mycia powierzchni szklanych (Henkel)",
+    "expectedSubstanceIds": ["benzisothiazolinone_preservative"]
+  }
+]

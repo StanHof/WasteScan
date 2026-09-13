@@ -70,14 +70,17 @@ fun WasteAppNavigation() {
     // usuwana z kompozycji podczas nawigacji między ekranami, w przeciwieństwie do zawartości
     // poszczególnych composable("route") { ... }). Gdyby remember() był w środku bloku
     // "result_screen", oba interpretery TFLite (EAST + CRNN) byłyby wczytywane z assets od nowa
-    // przy KAŻDYM wejściu na ten ekran (każde nowe zdjęcie, każdy podgląd z historii) - tutaj
-    // wczytują się tylko raz na sesję i ponownie wyłącznie przy realnej zmianie trybu lokalny/chmura.
-    val activeClassifier: ClassifierStrategy = remember(isCloudModeSelected) {
-        if (isCloudModeSelected) CloudIngredientClassifier(context) else LocalIngredientClassifier(
-            context,
-            TfliteTextRecognizerEngine(context, EastTextRegionDetector(context))
-        )
+    // przy KAŻDYM wejściu na ten ekran (każde nowe zdjęcie, każdy podgląd z historii).
+    //
+    // Obie implementacje (lokalna i chmurowa) są trzymane jednocześnie, a nie tylko ta aktualnie
+    // wybrana - potrzebne dla BenchmarkScreen, które uruchamia OBIE na tym samym zdjęciu do
+    // porównania (Faza 5 planu). Dzięki temu też przełączenie trybu lokalny/chmura w ogóle nie
+    // wymaga już przebudowy klasyfikatora - obie instancje po prostu już istnieją.
+    val localClassifier = remember {
+        LocalIngredientClassifier(context, TfliteTextRecognizerEngine(context, EastTextRegionDetector(context)))
     }
+    val cloudClassifier = remember { CloudIngredientClassifier(context) }
+    val activeClassifier: ClassifierStrategy = if (isCloudModeSelected) cloudClassifier else localClassifier
 
     val database = remember { AppDatabase.getDatabase(context) }
     val dao = database.historyDao()
@@ -119,11 +122,20 @@ fun WasteAppNavigation() {
                 isCloudMode = isCloudModeSelected,
                 onModeChange = { isCloudModeSelected = it }, // Zapisujemy wybór użytkownika
                 onHistoryClick = { navController.navigate("history_screen") },
+                onBenchmarkClick = { navController.navigate("benchmark_screen") },
                 onPhotoTaken = { bitmap ->
                     capturedImage = bitmap
                     historyReportToShow = null
                     navController.navigate("result_screen")
                 }
+            )
+        }
+
+        composable("benchmark_screen") {
+            BenchmarkScreen(
+                localClassifier = localClassifier,
+                cloudClassifier = cloudClassifier,
+                onBack = { navController.popBackStack() }
             )
         }
 
