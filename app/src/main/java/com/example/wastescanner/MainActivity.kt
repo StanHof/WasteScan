@@ -76,8 +76,23 @@ fun WasteAppNavigation() {
     // wybrana - potrzebne dla BenchmarkScreen, które uruchamia OBIE na tym samym zdjęciu do
     // porównania (Faza 5 planu). Dzięki temu też przełączenie trybu lokalny/chmura w ogóle nie
     // wymaga już przebudowy klasyfikatora - obie instancje po prostu już istnieją.
+    // Silnik lokalny: PaddleOCR (PP-OCRv6_small, ONNX Runtime) zamiast własnego EAST+CRNN -
+    // decyzja podjęta po ocenie wykonalności (docs/paddleocr_evaluation.md): ~4% recall własnego
+    // pipeline'u vs ~81% dla PaddleOCR na tym samym zestawie testowym. TfliteTextRecognizerEngine
+    // (EAST+CRNN) zostaje w kodzie nietknięty - dalej dostępny do porównań/dalszej pracy, po prostu
+    // nie jest już domyślnie aktywny.
     val localClassifier = remember {
-        LocalIngredientClassifier(context, TfliteTextRecognizerEngine(context, EastTextRegionDetector(context)))
+        LocalIngredientClassifier(context, PaddleOcrTextRecognizerEngine(context))
+    }
+    // Wariant "medium" (PP-OCRv6_medium, ~138 MB) wczytywany LENIWIE - dopiero po wejściu na
+    // BenchmarkScreen, żeby nie kosztował pamięci/czasu startu przy normalnym skanowaniu.
+    val localMediumClassifier by remember {
+        lazy {
+            LocalIngredientClassifier(
+                context,
+                PaddleOcrTextRecognizerEngine(context, modelDir = PaddleOcrTextRecognizerEngine.MEDIUM_MODEL_DIR)
+            )
+        }
     }
     val cloudClassifier = remember { CloudIngredientClassifier(context) }
     val activeClassifier: ClassifierStrategy = if (isCloudModeSelected) cloudClassifier else localClassifier
@@ -134,6 +149,7 @@ fun WasteAppNavigation() {
         composable("benchmark_screen") {
             BenchmarkScreen(
                 localClassifier = localClassifier,
+                localMediumClassifier = localMediumClassifier,
                 cloudClassifier = cloudClassifier,
                 onBack = { navController.popBackStack() }
             )

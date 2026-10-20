@@ -66,7 +66,10 @@ data class IngredientSafetyReport(
     val overallRisk: RiskLevel = RiskLevel.SAFE,
     val comment: String? = null,
     val rawOcrText: String? = null,
-    val executionTimeMs: Long = 0L
+    val executionTimeMs: Long = 0L,
+    // true = analiza się NIE powiodła (np. błąd sieci/limit API) - pusta lista składników oznacza
+    // wtedy "brak wyniku", a nie "produkt bezpieczny". Benchmark wyłącza takie wiersze z metryk.
+    val isError: Boolean = false
 ) {
     companion object {
         /**
@@ -123,6 +126,7 @@ data class BenchmarkGroundTruthEntry(
 data class BenchmarkResult(
     val imageLabel: String,
     val localReport: IngredientSafetyReport,
+    val localMediumReport: IngredientSafetyReport,
     val cloudReport: IngredientSafetyReport,
     val groundTruth: BenchmarkGroundTruthEntry? = null
 )

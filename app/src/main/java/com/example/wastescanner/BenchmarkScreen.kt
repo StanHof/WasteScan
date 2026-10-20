@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BenchmarkScreen(
     localClassifier: ClassifierStrategy,
+    localMediumClassifier: ClassifierStrategy,
     cloudClassifier: ClassifierStrategy,
     onBack: () -> Unit
 ) {
@@ -92,7 +93,7 @@ fun BenchmarkScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Powrót")
                     }
-                    Text("Benchmark: Lokalny vs Chmura", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Benchmark: Small vs Medium vs Chmura", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 }
             }
         },
@@ -106,7 +107,7 @@ fun BenchmarkScreen(
         ) {
             Text(
                 "Zestaw testowy: ${manifest.size} zdjęć (app/src/main/assets/benchmark/manifest.json). " +
-                        "Każde zostanie przeanalizowane OBOMA silnikami (lokalnym i chmurowym), a wynik - " +
+                        "Każde zostanie przeanalizowane TRZEMA silnikami (lokalny PP-OCRv6 small, lokalny PP-OCRv6 medium i chmurowy), a wynik - " +
                         "wraz z recall/precyzją względem oczekiwanych substancji - można wyeksportować do CSV.",
                 fontSize = 13.sp,
                 color = Color.Gray
@@ -126,11 +127,13 @@ fun BenchmarkScreen(
                                 if (bitmap != null) {
                                     val cropped = cropCenterSquare(bitmap)
                                     val localReport = localClassifier.analyzeIngredients(cropped)
+                                    val localMediumReport = localMediumClassifier.analyzeIngredients(cropped)
                                     val cloudReport = cloudClassifier.analyzeIngredients(cropped)
                                     results.add(
                                         BenchmarkResult(
                                             imageLabel = entry.fileName,
                                             localReport = localReport,
+                                            localMediumReport = localMediumReport,
                                             cloudReport = cloudReport,
                                             groundTruth = entry
                                         )
@@ -193,7 +196,8 @@ fun BenchmarkScreen(
 
 @Composable
 private fun BenchmarkResultRow(result: BenchmarkResult) {
-    val agrees = result.localReport.overallRisk == result.cloudReport.overallRisk
+    val agrees = result.localReport.overallRisk == result.cloudReport.overallRisk &&
+            result.localMediumReport.overallRisk == result.cloudReport.overallRisk
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -210,7 +214,8 @@ private fun BenchmarkResultRow(result: BenchmarkResult) {
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                VerdictColumn("Lokalny", result.localReport)
+                VerdictColumn("Lokalny small", result.localReport)
+                VerdictColumn("Lokalny medium", result.localMediumReport)
                 VerdictColumn("Chmura", result.cloudReport)
             }
             Spacer(modifier = Modifier.height(6.dp))

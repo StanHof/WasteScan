@@ -74,11 +74,17 @@ object StorageManager {
     // na poziomie rozpoznanych SUBSTANCJI (nie pojedynczych słów - do tego potrzebna byłaby
     // osobna transkrypcja wzorcowa, której ten ekran nie zbiera).
     fun generateBenchmarkCsvData(results: List<BenchmarkResult>): String {
-        fun clean(text: String?) = (text ?: "").replace(",", ";").replace("\n", " ")
-        fun riskyNames(report: IngredientSafetyReport) = report.ingredients
-            .filter { it.riskLevel != RiskLevel.SAFE }
-            .joinToString(separator = "; ") { it.matchedName }
-            .ifEmpty { "Brak" }
+        // Pole tekstowe w cudzysłowie wg RFC 4180 (przecinki w nazwach substancji, np. "Cebula,
+        // czosnek, szczypiorek, por", nie rozbijają już wiersza na dodatkowe kolumny).
+        fun clean(text: String?) = "\"" + (text ?: "").replace("\r", " ").replace("\n", " ").replace("\"", "\"\"") + "\""
+        fun riskyNames(report: IngredientSafetyReport) = clean(
+            report.ingredients
+                .filter { it.riskLevel != RiskLevel.SAFE }
+                .joinToString(separator = "; ") { it.matchedName }
+                .ifEmpty { "Brak" }
+        )
+        fun verdict(report: IngredientSafetyReport) =
+            if (report.isError) "BŁĄD" else report.overallRisk.labelPL
 
         // Zwraca (recall%, precyzja%, falszywyAlarm) względem oczekiwanych id z manifestu.
         // Liczone WYŁĄCZNIE na bazie matchedSubstanceId (dopasowań do bazy wiedzy) - składniki
@@ -86,6 +92,8 @@ object StorageManager {
         // zweryfikować względem ground truth (który też jest wyrażony w id z bazy), więc są
         // pomijane w tym liczeniu, choć nadal widoczne w kolumnie "Wykryte substancje".
         fun score(report: IngredientSafetyReport, expected: List<String>?): Triple<String, String, String> {
+            // Nieudana analiza (np. błąd API) nie jest wynikiem "nic nie wykryto" - wyłączona z metryk.
+            if (report.isError) return Triple("BŁĄD", "BŁĄD", "BŁĄD")
             if (expected == null) return Triple("N/D", "N/D", "N/D")
             val expectedSet = expected.toSet()
             val detectedSet = report.ingredients.mapNotNull { it.matchedSubstanceId }.toSet()
@@ -99,31 +107,33 @@ object StorageManager {
             return Triple("%.0f".format(recall), "%.0f".format(precision), "-")
         }
 
+        val columnsPerEngine = "Werdykt,Wykryte_substancje,Wykryte_slowa,Czas_ms,Recall_proc,Precyzja_proc,Falszywy_alarm"
+        fun header(prefix: String) = columnsPerEngine.split(",").joinToString(",") { "${prefix}_$it" }
+
         val builder = StringBuilder()
-        builder.append(
-            "ZdjecieID,Produkt,Oczekiwane_substancje,Local_Werdykt,Local_Wykryte_substancje," +
-                    "Local_Wykryte_slowa,Local_Czas_ms,Local_Recall_proc,Local_Precyzja_proc,Local_Falszywy_alarm," +
-                    "Cloud_Werdykt,Cloud_Wykryte_substancje,Cloud_Wykryte_slowa,Cloud_Czas_ms," +
-                    "Cloud_Recall_proc,Cloud_Precyzja_proc,Cloud_Falszywy_alarm,Uwagi\n"
-        )
+        builder.append("ZdjecieID,Produkt,Oczekiwane_substancje,${header("LocalSmall")},${header("LocalMedium")},${header("Cloud")},Uwagi\n")
 
         results.forEach { result ->
-            val local = result.localReport
-            val cloud = result.cloudReport
             val groundTruth = result.groundTruth
             val expectedIds = groundTruth?.expectedSubstanceIds
 
-            val (localRecall, localPrecision, localFalseAlarm) = score(local, expectedIds)
-            val (cloudRecall, cloudPrecision, cloudFalseAlarm) = score(cloud, expectedIds)
+            // Jedna grupa 7 kolumn na silnik - wspólny kod, żeby wszystkie trzy były liczone identycznie.
+            fun engineColumns(report: IngredientSafetyReport, words: String): String {
+                val (recall, precision, falseAlarm) = score(report, expectedIds)
+                return "${verdict(report)},${riskyNames(report)},$words,${report.executionTimeMs},$recall,$precision,$falseAlarm"
+            }
+            val cloudWords = clean(
+                if (result.cloudReport.isError) result.cloudReport.comment
+                else "N/D (tryb chmurowy nie zwraca pełnej listy słów)"
+            )
 
             builder.append(
                 "${clean(result.imageLabel)},${clean(groundTruth?.productName)}," +
                         "${clean(expectedIds?.joinToString("; ") ?: "N/D (brak w manifeście)")}," +
-                        "${local.overallRisk.labelPL},${riskyNames(local)},${clean(local.rawOcrText)}," +
-                        "${local.executionTimeMs},$localRecall,$localPrecision,$localFalseAlarm," +
-                        "${cloud.overallRisk.labelPL},${riskyNames(cloud)}," +
-                        "N/D (tryb chmurowy nie zwraca pełnej listy słów),${cloud.executionTimeMs}," +
-                        "$cloudRecall,$cloudPrecision,$cloudFalseAlarm,${clean(groundTruth?.notes)}\n"
+                        "${engineColumns(result.localReport, clean(result.localReport.rawOcrText))}," +
+                        "${engineColumns(result.localMediumReport, clean(result.localMediumReport.rawOcrText))}," +
+                        "${engineColumns(result.cloudReport, cloudWords)}," +
+                        "${clean(groundTruth?.notes)}\n"
             )
         }
         return builder.toString()

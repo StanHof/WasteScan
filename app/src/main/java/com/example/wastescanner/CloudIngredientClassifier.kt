@@ -8,6 +8,7 @@ import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.system.measureTimeMillis
 
@@ -32,6 +33,8 @@ class CloudIngredientClassifier(private val context: Context) : ClassifierStrate
     companion object {
         private const val TAG = "CloudIngredientClassifier"
         private const val KNOWLEDGE_BASE_ASSET = "dog_toxicity_database.json"
+        private const val MAX_ATTEMPTS = 3
+        private const val RETRY_BASE_DELAY_MS = 2000L
     }
 
     private val apiKey = BuildConfig.GEMINI_API_KEY
@@ -53,23 +56,45 @@ class CloudIngredientClassifier(private val context: Context) : ClassifierStrate
                             apiKey = apiKey,
                             generationConfig = generationConfig { responseMimeType = "application/json" }
                         )
-                        val response = generativeModel.generateContent(
-                            content {
-                                image(bitmap)
-                                text(buildPrompt(knowledgeBaseJson))
-                            }
-                        )
+                        val prompt = buildPrompt(knowledgeBaseJson)
+                        val response = generateWithRetry(generativeModel, bitmap, prompt)
                         parseResponse(response.text)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Błąd podczas chmurowej analizy składu", e)
                     IngredientSafetyReport(
-                        comment = "Błąd połączenia z serwerem: ${e.localizedMessage ?: e.javaClass.simpleName}"
+                        comment = "Błąd połączenia z serwerem: ${e.localizedMessage ?: e.javaClass.simpleName}",
+                        isError = true
                     )
                 }
             }
             report.copy(executionTimeMs = timeTaken)
         }
+
+    /** Przejściowe błędy (limit zapytań, przeciążenie, zerwane połączenie) zdarzają się w tym API -
+     *  bez ponowień trafiały jako "Bezpieczne / brak wykrytych składników" do wyników benchmarku. */
+    private suspend fun generateWithRetry(
+        model: GenerativeModel,
+        bitmap: Bitmap,
+        prompt: String
+    ): com.google.ai.client.generativeai.type.GenerateContentResponse {
+        var lastError: Exception? = null
+        for (attempt in 1..MAX_ATTEMPTS) {
+            try {
+                return model.generateContent(
+                    content {
+                        image(bitmap)
+                        text(prompt)
+                    }
+                )
+            } catch (e: Exception) {
+                lastError = e
+                Log.w(TAG, "Próba $attempt/$MAX_ATTEMPTS zapytania do Gemini nie powiodła się", e)
+                if (attempt < MAX_ATTEMPTS) delay(RETRY_BASE_DELAY_MS * attempt)
+            }
+        }
+        throw lastError ?: IllegalStateException("Nieznany błąd zapytania do Gemini")
+    }
 
     private fun loadKnowledgeBaseJson(): String =
         context.assets.open(KNOWLEDGE_BASE_ASSET).bufferedReader(Charsets.UTF_8).use { it.readText() }
@@ -116,7 +141,7 @@ class CloudIngredientClassifier(private val context: Context) : ClassifierStrate
 
     private fun parseResponse(responseText: String?): IngredientSafetyReport {
         if (responseText.isNullOrBlank()) {
-            return IngredientSafetyReport(comment = "Model nie zwrócił żadnej odpowiedzi.")
+            return IngredientSafetyReport(comment = "Model nie zwrócił żadnej odpowiedzi.", isError = true)
         }
 
         val parsed = try {
@@ -125,7 +150,8 @@ class CloudIngredientClassifier(private val context: Context) : ClassifierStrate
             Log.e(TAG, "Nie udało się sparsować odpowiedzi modelu jako JSON: $responseText", e)
             return IngredientSafetyReport(
                 comment = "Nie udało się przetworzyć odpowiedzi modelu (nieprawidłowy JSON).",
-                rawOcrText = responseText
+                rawOcrText = responseText,
+                isError = true
             )
         }
 

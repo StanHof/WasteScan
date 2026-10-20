@@ -22,6 +22,7 @@ android {
 
     androidResources {
         noCompress += "tflite"
+        noCompress += "onnx"
     }
     packaging {
         resources {
@@ -101,4 +102,12 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-select-tf-ops:2.16.1")
     implementation("com.google.mlkit:text-recognition:16.0.1")
     implementation("androidx.exifinterface:exifinterface:1.3.7")
+
+    // Wersja przypięta zgodnie z wymaganiami oficjalnego demo PaddleOCR (deploy/ppocr-android) -
+    // patrz docs/paddleocr_evaluation.md. Świadomie BEZ OpenCV (druga zależność tego demo) - patrz
+    // PaddleOcrGeometry.kt / PaddleOcrPreprocess.kt, gdzie detekcja/przetwarzanie obrazu są
+    // reimplementowane w czystym Kotlinie/Android SDK z tego samego powodu, dla którego EAST
+    // (EastTextDetector.kt) też unika OpenCV - ryzyko niezgodności natywnych zależności ABI
+    // (potwierdzone empirycznie podczas testów demo: trzy kolejne awarie natywne w OpenCV).
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.21.1")
 }

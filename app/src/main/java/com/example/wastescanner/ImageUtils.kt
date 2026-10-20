@@ -69,7 +69,7 @@ private fun readExifRotationDegrees(context: Context, uri: Uri): Int {
 // Faza 3: cropPercentage podniesiony z 0.40f do 0.90f. Stara wartość była dobrana pod MVP
 // klasyfikatora odpadów (pojedynczy przedmiot, blisko obiektywu) - przy skanowaniu etykiety
 // tekstowej 40% środka kadru w praktyce ucinało cały tekst, co skutkowało pustym wynikiem OCR.
-fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.60f): Bitmap {
+fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.90f): Bitmap {
     val width = bitmap.width
     val height = bitmap.height
 
