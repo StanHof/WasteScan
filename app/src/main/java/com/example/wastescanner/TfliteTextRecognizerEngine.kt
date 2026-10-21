@@ -38,7 +38,7 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
  *      nie zakładaj tego na ślepo.
  *
  * Docelowo podmieniasz oba pliki na własne - kształty wejścia/wyjścia są odczytywane w runtime
- * z interpretera (ten sam wzorzec co w LocalWasteClassifier z MVP klasyfikatora odpadów),
+ * z interpretera (kształty nie są zaszyte na sztywno),
  * więc reszta tej klasy nie wymaga zmian, o ile Twój model też jest architekturą CRNN+CTC
  * (jeden wycinek słowa na wejściu, sekwencja klas znaków na wyjściu).
  */

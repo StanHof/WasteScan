@@ -35,7 +35,7 @@ private val LightColorScheme = lightColorScheme(
 
 // To jest "Opakowanie", którego będziesz używać w MainActivity
 @Composable
-fun WasteScannerTheme(
+fun PawCheckTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true, // Pozwala na użycie kolorów z tapety na nowszych Androidach
     content: @Composable () -> Unit

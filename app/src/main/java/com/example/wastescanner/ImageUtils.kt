@@ -65,10 +65,9 @@ private fun readExifRotationDegrees(context: Context, uri: Uri): Int {
     }
 }
 
-// Funkcja wycinająca kwadrat ze środka zdjęcia
-// Faza 3: cropPercentage podniesiony z 0.40f do 0.90f. Stara wartość była dobrana pod MVP
-// klasyfikatora odpadów (pojedynczy przedmiot, blisko obiektywu) - przy skanowaniu etykiety
-// tekstowej 40% środka kadru w praktyce ucinało cały tekst, co skutkowało pustym wynikiem OCR.
+// Wycina kwadrat ze środka zdjęcia (używane dla zdjęć z aparatu i w benchmarku; zdjęcia z galerii
+// użytkownik kadruje sam na ekranie CropScreen). Domyślnie 90% krótszego boku - mniejsze wartości
+// ucinały końce linii tekstu etykiety (pomiar: 60% -> 18.8% recall, 90% -> 64.6% w tym samym teście).
 fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.90f): Bitmap {
     val width = bitmap.width
     val height = bitmap.height
@@ -86,8 +85,7 @@ fun cropCenterSquare(bitmap: Bitmap, cropPercentage: Float = 0.90f): Bitmap {
     // 4. Tworzymy i zwracamy nową, wyciętą Bitmapę
     return Bitmap.createBitmap(bitmap, startX, startY, cropSize, cropSize)
 }
-// Faza 1: getBinColor (kolory kategorii odpadów) zastąpiony przez getRiskColor,
-// bo wynikiem analizy jest teraz poziom ryzyka dla psa, a nie kategoria odpadu.
+// Kolor odpowiadający poziomowi ryzyka dla psa.
 fun getRiskColor(riskLevel: RiskLevel): Color {
     return when (riskLevel) {
         RiskLevel.SAFE -> Color(0xFF66BB6A)       // Zielony

@@ -129,8 +129,18 @@ class ToxicityRepository private constructor(
             return wordSet.contains(aliasWord)
         }
 
-        // Dłuższe słowa - tolerancja na błędy OCR poprzez odległość Levenshteina.
-        val maxDistance = if (aliasWord.length >= 7) 2 else 1
+        // 4-literowe aliasy ("cynk", "kawa", "cola", "zinc") - dopasowanie dokładne albo odmiana
+        // (to samo słowo + max 2 znaki, np. "cynku", "cynkiem"), BEZ rozmycia Levenshteina:
+        // przy tak krótkich słowach jedna zmieniona litera daje już inne słowo, a szum OCR
+        // ("INC." -> "zinc", "kawa" <- "lawa") generował fałszywe alarmy (patrz benchmark z 21.10).
+        if (aliasWord.length == 4) {
+            return words.any { it == aliasWord || (it.startsWith(aliasWord) && it.length <= aliasWord.length + 2) }
+        }
+
+        // Dłuższe słowa - tolerancja na błędy OCR poprzez odległość Levenshteina. Dopuszczalna
+        // odległość rośnie wolniej niż wcześniej (2 dopiero od 10 liter, nie od 7): "battery" vs
+        // "butter" (odległość 2) dawało fałszywe "Baterie" na maśle orzechowym.
+        val maxDistance = if (aliasWord.length >= 10) 2 else 1
         return words.any { levenshtein(it, aliasWord) <= maxDistance }
     }
 

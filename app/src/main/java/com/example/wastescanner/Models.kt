@@ -52,7 +52,6 @@ data class IngredientMatch(
 
 /**
  * Pełny raport analizy bezpieczeństwa produktu dla psa.
- * Zastępuje dotychczasowy AnalysisReport z MVP klasyfikatora odpadów.
  *
  * @param ingredients lista wszystkich rozpoznanych składników z ich oceną ryzyka
  * @param overallRisk zagregowany poziom ryzyka całego produktu (zasada "najsłabszego ogniwa" -
@@ -89,9 +88,15 @@ data class IngredientSafetyReport(
     }
 }
 
+/** Silnik analizy wybierany przez użytkownika (ekran aparatu / kadrowania). */
+enum class AnalysisEngine(val label: String) {
+    LOCAL_SMALL("Lokalny S"),
+    LOCAL_MEDIUM("Lokalny M"),
+    GEMINI("Gemini")
+}
+
 /**
  * Wspólny kontrakt dla implementacji lokalnej (on-device OCR) i chmurowej (Gemini).
- * Zastępuje poprzednią sygnaturę `classify(bitmap): AnalysisReport` z MVP klasyfikatora odpadów.
  */
 interface ClassifierStrategy {
     suspend fun analyzeIngredients(bitmap: Bitmap): IngredientSafetyReport

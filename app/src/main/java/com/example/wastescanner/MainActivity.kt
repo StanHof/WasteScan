@@ -22,7 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.wastescanner.ui.theme.WasteScannerTheme
+import com.example.wastescanner.ui.theme.PawCheckTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -34,14 +34,14 @@ class MainActivity : ComponentActivity() {
         ) { isGranted -> if (isGranted) recreate() }
 
         setContent {
-            WasteScannerTheme {
+            PawCheckTheme {
                 val context = LocalContext.current
                 val hasPermission = ContextCompat.checkSelfPermission(
                     context, Manifest.permission.CAMERA
                 ) == PackageManager.PERMISSION_GRANTED
 
                 if (hasPermission) {
-                    WasteAppNavigation()
+                    PawCheckNavigation()
                 } else {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Text("Oczekuję na uprawnienia do aparatu...")
@@ -56,17 +56,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun WasteAppNavigation() {
+fun PawCheckNavigation() {
     val context = LocalContext.current
     val navController = rememberNavController()
     var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
     var historyReportToShow by remember { mutableStateOf<IngredientSafetyReport?>(null) }
     val historyItems = remember { mutableStateListOf<HistoryItem>() }
 
-    var isCloudModeSelected by remember { mutableStateOf(false) }
+    var selectedEngine by remember { mutableStateOf(AnalysisEngine.LOCAL_SMALL) }
+    // Zdjęcie wybrane z galerii, czekające na przycięcie (pełna rozdzielczość, przed kadrowaniem).
+    var pendingCropBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     // Hoisted here (above NavHost) zamiast wewnątrz composable("result_screen") - ten blok jest
-    // częścią kompozycji, która żyje przez cały czas trwania sesji (WasteAppNavigation nie jest
+    // częścią kompozycji, która żyje przez cały czas trwania sesji (PawCheckNavigation nie jest
     // usuwana z kompozycji podczas nawigacji między ekranami, w przeciwieństwie do zawartości
     // poszczególnych composable("route") { ... }). Gdyby remember() był w środku bloku
     // "result_screen", oba interpretery TFLite (EAST + CRNN) byłyby wczytywane z assets od nowa
@@ -84,8 +86,9 @@ fun WasteAppNavigation() {
     val localClassifier = remember {
         LocalIngredientClassifier(context, PaddleOcrTextRecognizerEngine(context))
     }
-    // Wariant "medium" (PP-OCRv6_medium, ~138 MB) wczytywany LENIWIE - dopiero po wejściu na
-    // BenchmarkScreen, żeby nie kosztował pamięci/czasu startu przy normalnym skanowaniu.
+    // Wariant "medium" (PP-OCRv6_medium, ~138 MB) wczytywany LENIWIE - dopiero gdy użytkownik
+    // wybierze "Lokalny M" albo wejdzie na BenchmarkScreen, żeby nie kosztował pamięci/czasu
+    // startu przy normalnym skanowaniu.
     val localMediumClassifier by remember {
         lazy {
             LocalIngredientClassifier(
@@ -95,7 +98,11 @@ fun WasteAppNavigation() {
         }
     }
     val cloudClassifier = remember { CloudIngredientClassifier(context) }
-    val activeClassifier: ClassifierStrategy = if (isCloudModeSelected) cloudClassifier else localClassifier
+    val activeClassifier: ClassifierStrategy = when (selectedEngine) {
+        AnalysisEngine.LOCAL_SMALL -> localClassifier
+        AnalysisEngine.LOCAL_MEDIUM -> localMediumClassifier
+        AnalysisEngine.GEMINI -> cloudClassifier
+    }
 
     val database = remember { AppDatabase.getDatabase(context) }
     val dao = database.historyDao()
@@ -134,16 +141,52 @@ fun WasteAppNavigation() {
     ) {
         composable("camera_screen") {
             CameraScreen(
-                isCloudMode = isCloudModeSelected,
-                onModeChange = { isCloudModeSelected = it }, // Zapisujemy wybór użytkownika
+                engine = selectedEngine,
+                onEngineChange = { selectedEngine = it },
                 onHistoryClick = { navController.navigate("history_screen") },
                 onBenchmarkClick = { navController.navigate("benchmark_screen") },
                 onPhotoTaken = { bitmap ->
                     capturedImage = bitmap
                     historyReportToShow = null
                     navController.navigate("result_screen")
+                },
+                onGalleryPhotoPicked = { bitmap ->
+                    pendingCropBitmap = bitmap
+                    navController.navigate("crop_screen")
                 }
             )
+        }
+
+        composable("crop_screen") {
+            val source = pendingCropBitmap
+            if (source == null) {
+                // Brak zdjęcia (np. odtworzenie ekranu po utracie stanu) - wracamy do aparatu.
+                // Warunek na bieżący cel jest konieczny: po zatwierdzeniu/anulowaniu kadru ten
+                // blok jest jeszcze przez chwilę komponowany (animacja wyjścia), gdy nawigacja
+                // jest już na innym ekranie - bez sprawdzenia zdjęlibyśmy wtedy ekran wyniku.
+                LaunchedEffect(Unit) {
+                    if (navController.currentBackStackEntry?.destination?.route == "crop_screen") {
+                        navController.popBackStack()
+                    }
+                }
+            } else {
+                CropScreen(
+                    bitmap = source,
+                    engine = selectedEngine,
+                    onEngineChange = { selectedEngine = it },
+                    onCancel = {
+                        pendingCropBitmap = null
+                        navController.popBackStack()
+                    },
+                    onConfirm = { cropped ->
+                        pendingCropBitmap = null
+                        capturedImage = cropped
+                        historyReportToShow = null
+                        // Wyjście z wyniku wraca do aparatu, nie do ekranu kadrowania.
+                        navController.navigate("result_screen") { popUpTo("camera_screen") }
+                    }
+                )
+            }
         }
 
         composable("benchmark_screen") {
@@ -160,6 +203,7 @@ fun WasteAppNavigation() {
                 bitmap = capturedImage,
                 initialReport = historyReportToShow,
                 classifier = activeClassifier,
+                engine = selectedEngine,
                 onSaveToHistory = { date, report ->
                     val savedImagePath = capturedImage?.let {
                         StorageManager.saveBitmap(context, it, "scan_${System.currentTimeMillis()}")
@@ -192,7 +236,7 @@ fun WasteAppNavigation() {
                 },
                 onExportClick = { // --- NOWOŚĆ: Akcja wywołująca zapis ---
                     // Uruchamiamy systemowe okno z domyślną nazwą pliku
-                    exportLauncher.launch("badania_odpady_${System.currentTimeMillis()}.csv")
+                    exportLauncher.launch("pawcheck_historia_${System.currentTimeMillis()}.csv")
                 },
                 onBack = { navController.popBackStack() }
             )

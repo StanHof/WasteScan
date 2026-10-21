@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import java.util.UUID
 
 /**
- * Faza 1 planu - zmiany względem MVP klasyfikatora odpadów:
+ * Historia skanów. Zmiany schematu (Faza 1 planu):
  *  - id: Long -> String (UUID). Poprzednio id = System.currentTimeMillis(), co przy dwóch
  *    zapisach w tej samej milisekundzie nadpisywało wpis (OnConflictStrategy.REPLACE).
  *  - label/confidence (pojedyncza etykieta + pewność) zastąpione przez pełny `report`

@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -31,11 +32,22 @@ fun ResultScreen(
     bitmap: Bitmap?,
     initialReport: IngredientSafetyReport? = null,
     classifier: ClassifierStrategy,
+    engine: AnalysisEngine? = null,
     onSaveToHistory: (String, IngredientSafetyReport) -> Unit,
     onTryAgain: () -> Unit
 ) {
     var currentReport by remember { mutableStateOf(initialReport) }
     var isSaved by remember { mutableStateOf(initialReport != null) }
+
+    // Licznik czasu analizy - sama animacja kółka nie mówi, czy aplikacja pracuje, a upływające
+    // sekundy tak (analiza lokalna M i chmurowa potrafią trwać kilkanaście-kilkadziesiąt sekund).
+    var elapsedSeconds by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (currentReport == null) {
+            delay(1000)
+            elapsedSeconds++
+        }
+    }
 
     LaunchedEffect(bitmap) {
         if (bitmap != null && currentReport == null) {
@@ -62,10 +74,10 @@ fun ResultScreen(
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = "Zeskanowana etykieta",
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
+                    .heightIn(max = 300.dp)
                     .clip(RoundedCornerShape(24.dp))
             )
         }
@@ -82,7 +94,37 @@ fun ResultScreen(
                 val report = currentReport
 
                 if (report == null) {
-                    Text("Analizowanie składu...", modifier = Modifier.align(Alignment.CenterHorizontally))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp),
+                            strokeWidth = 5.dp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Analizuję etykietę...", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            buildString {
+                                engine?.let { append("${it.label} · ") }
+                                append("${elapsedSeconds} s")
+                            },
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                        engine?.let {
+                            Text(
+                                when (it) {
+                                    AnalysisEngine.LOCAL_SMALL -> "Zwykle kilka sekund"
+                                    AnalysisEngine.LOCAL_MEDIUM -> "Zwykle około 10 sekund"
+                                    AnalysisEngine.GEMINI -> "Chmura: zwykle 10-30 sekund"
+                                },
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
                 } else if (report.ingredients.isNotEmpty()) {
                     // --- Werdykt ogólny (kolor i etykieta najwyższego wykrytego poziomu ryzyka) ---
                     Surface(

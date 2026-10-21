@@ -45,20 +45,19 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.example.wastescanner.ui.theme.WasteScannerTheme
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import com.example.wastescanner.ui.theme.PawCheckTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun CameraScreen(
-    isCloudMode: Boolean,
-    onModeChange: (Boolean) -> Unit,
+    engine: AnalysisEngine,
+    onEngineChange: (AnalysisEngine) -> Unit,
     onHistoryClick: () -> Unit,
     onBenchmarkClick: () -> Unit,
-    onPhotoTaken: (Bitmap) -> Unit
+    onPhotoTaken: (Bitmap) -> Unit,
+    onGalleryPhotoPicked: (Bitmap) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -74,8 +73,8 @@ fun CameraScreen(
             isProcessing = true
             val bitmap = uriToBitmap(it, context)
             if (bitmap != null) {
-                val croppedBitmap = cropCenterSquare(bitmap)
-                onPhotoTaken(croppedBitmap)
+                // Zdjęcie z galerii trafia na ekran kadrowania (użytkownik sam wybiera fragment).
+                onGalleryPhotoPicked(bitmap)
                 coroutineScope.launch {
                     kotlinx.coroutines.delay(500)
                     isProcessing = false
@@ -86,7 +85,7 @@ fun CameraScreen(
         }
     }
 
-    WasteScannerTheme(dynamicColor = false) {
+    PawCheckTheme(dynamicColor = false) {
         Box(modifier = Modifier.fillMaxSize()) {
             // --- 1. PODGLĄD Z KAMERY ---
             AndroidView(
@@ -141,58 +140,37 @@ fun CameraScreen(
                 )
             }
 
-            // --- NOWOŚĆ: PANEL WYBORU TRYBU BADANIA (NA GÓRZE PO LEWEJ) ---
-            Row(
+            // --- GÓRNY PASEK: wybór silnika (S / M / Gemini) + historia i benchmark ---
+            Column(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
                     .statusBarsPadding()
-                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                FilterChip(
-                    selected = !isCloudMode,
-                    onClick = { onModeChange(false) },
-                    label = { Text("Lokalny (TFLite)") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                )
-                FilterChip(
-                    selected = isCloudMode,
-                    onClick = { onModeChange(true) },
-                    label = { Text("Chmura (API)") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primary,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                )
-            }
-
-            // --- PRZYCISKI HISTORII I BENCHMARKU (NA GÓRZE PO PRAWEJ) ---
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-            ) {
-                IconButton(onClick = onBenchmarkClick, modifier = Modifier.padding(top = 16.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Science,
-                        contentDescription = "Porównanie lokalny/chmura (benchmark)",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = onBenchmarkClick) {
+                        Icon(
+                            imageVector = Icons.Default.Science,
+                            contentDescription = "Porównanie silników (benchmark)",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    IconButton(onClick = onHistoryClick) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "Historia skanów",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
-                IconButton(onClick = onHistoryClick, modifier = Modifier.padding(top = 16.dp, end = 16.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = "Historia skanów",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
+                EngineSelector(selected = engine, onSelect = onEngineChange)
             }
 
             // --- 3. DOLNY PANEL INTERFEJSU ---

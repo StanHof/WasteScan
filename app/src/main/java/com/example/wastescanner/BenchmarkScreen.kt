@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +56,14 @@ fun BenchmarkScreen(
     var progressDone by remember { mutableIntStateOf(0) }
     val results = remember { mutableStateListOf<BenchmarkResult>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Ekran nie może zgasnąć w trakcie benchmarku: po wygaszeniu Android potrafi odciąć sieć
+    // (zaobserwowane: ostatnie zapytanie do Gemini padło dokładnie w chwili wygaszenia ekranu).
+    val view = LocalView.current
+    DisposableEffect(isProcessing) {
+        view.keepScreenOn = isProcessing
+        onDispose { view.keepScreenOn = false }
+    }
 
     // Wczytanie manifestu z assets jest tanie (mały plik JSON) - robimy to raz, przy wejściu na
     // ekran, żeby użytkownik od razu widział ile zdjęć jest w zestawie, zanim cokolwiek uruchomi.
