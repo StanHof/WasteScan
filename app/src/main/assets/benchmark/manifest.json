@@ -38,5 +38,65 @@
     "fileName": "windowwash.jpg",
     "productName": "Płyn do mycia powierzchni szklanych (Henkel)",
     "expectedSubstanceIds": ["benzisothiazolinone_preservative"]
+  },
+  {
+    "fileName": "ketchup.jpg",
+    "productName": "Ketchup łagodny / Mild tomato ketchup (Pudliszki)",
+    "expectedSubstanceIds": ["excess_salt"]
+  },
+  {
+    "fileName": "bursztyn.jpg",
+    "productName": "Bursztyn - polski ser długodojrzewający, tarty (Spomlek)",
+    "expectedSubstanceIds": ["milk_dairy", "excess_salt"]
+  },
+  {
+    "fileName": "cottagecheese.jpg",
+    "productName": "Polski Wiejski - serek twarogowy ziarnisty ze śmietanką",
+    "expectedSubstanceIds": ["milk_dairy", "excess_salt"]
+  },
+  {
+    "fileName": "tuna.jpg",
+    "productName": "Tuńczyk w oliwie z oliwek (Rio Mare)",
+    "expectedSubstanceIds": ["excess_salt"]
+  },
+  {
+    "fileName": "greentea.jpg",
+    "productName": "Lipton Green Tea Nature (herbata zielona, bez listy składników)",
+    "expectedSubstanceIds": ["caffeine"]
+  },
+  {
+    "fileName": "cappuccino.jpg",
+    "productName": "Cappuccino z belgijską czekoladą - napój kawowy w proszku (Mokate)",
+    "expectedSubstanceIds": ["theobromine_cocoa", "caffeine", "milk_dairy", "coconut"]
+  },
+  {
+    "fileName": "toastbread.jpg",
+    "productName": "Chleb tostowy pszenny z dodatkiem zakwasu, krojony",
+    "expectedSubstanceIds": ["excess_salt"]
+  },
+  {
+    "fileName": "gochujang.jpg",
+    "productName": "Gochujang - koreańska pasta chili (Unifood)",
+    "expectedSubstanceIds": ["excess_salt", "alcohol", "allium"]
+  },
+  {
+    "fileName": "cookies.jpg",
+    "productName": "belVita - ciastka zbożowe z kawałkami czekolady (Mondelez)",
+    "expectedSubstanceIds": ["theobromine_cocoa", "excess_salt", "milk_dairy"]
+  },
+  {
+    "fileName": "footcream.jpg",
+    "productName": "Odżywczy krem do stóp z rokitnikiem, 100 ml",
+    "expectedSubstanceIds": ["coconut", "macadamia"]
+  },
+  {
+    "fileName": "bleachcleaner.jpg",
+    "productName": "Denkmit Schimmel-Entferner - spray na pleśń z chlorem, 750 ml (dm)",
+    "expectedSubstanceIds": ["bleach_sodium_hypochlorite", "alkaline_corrosives"]
+  },
+  {
+    "fileName": "dogfood.jpg",
+    "productName": "Sucha karma dla psa, 72% mięsa i produktów pochodzenia zwierzęcego (kontrola)",
+    "expectedSubstanceIds": []
   }
 ]
