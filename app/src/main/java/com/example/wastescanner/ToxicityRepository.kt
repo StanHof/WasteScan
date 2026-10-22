@@ -110,7 +110,7 @@ class ToxicityRepository private constructor(
 
             if (aliasWords.size == 1) {
                 val aliasWord = aliasWords.first()
-                if (matchesSingleWord(aliasWord, words, wordSet)) return alias
+                if (matchesSingleWord(substance.id, aliasWord, words, wordSet)) return alias
             } else {
                 // Alias wielowyrazowy: wymagamy dopasowania jako spójnego fragmentu tekstu.
                 // Ograniczenie (do backlogu Fazy 5): nie obsługuje inwersji kolejności słów.
@@ -120,7 +120,12 @@ class ToxicityRepository private constructor(
         return null
     }
 
-    private fun matchesSingleWord(aliasWord: String, words: List<String>, wordSet: Set<String>): Boolean {
+    private fun matchesSingleWord(
+        substanceId: String,
+        aliasWord: String,
+        words: List<String>,
+        wordSet: Set<String>
+    ): Boolean {
         val isENumber = E_NUMBER_REGEX.matches(aliasWord)
 
         // Numery E i bardzo krótkie tokeny (<=3 znaki) - tylko dopasowanie dokładne,
@@ -129,19 +134,39 @@ class ToxicityRepository private constructor(
             return wordSet.contains(aliasWord)
         }
 
+        return words.indices.any { i ->
+            wordMatchesAlias(words[i], aliasWord) && !isExcludedContext(substanceId, words, i)
+        }
+    }
+
+    private fun wordMatchesAlias(word: String, aliasWord: String): Boolean {
         // 4-literowe aliasy ("cynk", "kawa", "cola", "zinc") - dopasowanie dokładne albo odmiana
         // (to samo słowo + max 2 znaki, np. "cynku", "cynkiem"), BEZ rozmycia Levenshteina:
         // przy tak krótkich słowach jedna zmieniona litera daje już inne słowo, a szum OCR
         // ("INC." -> "zinc", "kawa" <- "lawa") generował fałszywe alarmy (patrz benchmark z 21.10).
         if (aliasWord.length == 4) {
-            return words.any { it == aliasWord || (it.startsWith(aliasWord) && it.length <= aliasWord.length + 2) }
+            return word == aliasWord || (word.startsWith(aliasWord) && word.length <= aliasWord.length + 2)
         }
 
         // Dłuższe słowa - tolerancja na błędy OCR poprzez odległość Levenshteina. Dopuszczalna
         // odległość rośnie wolniej niż wcześniej (2 dopiero od 10 liter, nie od 7): "battery" vs
         // "butter" (odległość 2) dawało fałszywe "Baterie" na maśle orzechowym.
+        if (word in FUZZY_STOPWORDS) return false
         val maxDistance = if (aliasWord.length >= 10) 2 else 1
-        return words.any { levenshtein(it, aliasWord) <= maxDistance }
+        return levenshtein(word, aliasWord) <= maxDistance
+    }
+
+    /**
+     * Kontekst, w którym dopasowane słowo NIE oznacza danej substancji. Dziś jeden przypadek:
+     * "alcohol" w nazwach INCI alkoholi tłuszczowych ("Cetearyl Alcohol", "Stearyl Alcohol",
+     * pol. "alkohol cetylowy") to emolienty w kosmetykach, nie etanol - dawały fałszywe "Alkohol".
+     */
+    private fun isExcludedContext(substanceId: String, words: List<String>, index: Int): Boolean {
+        if (substanceId != ALCOHOL_SUBSTANCE_ID) return false
+        val previous = words.getOrNull(index - 1)
+        val next = words.getOrNull(index + 1)
+        return (previous != null && previous.endsWith("yl")) ||
+                (next != null && next.endsWith("ylowy"))
     }
 
     private fun toIngredientMatch(substance: ToxicitySubstanceJson, matchedAlias: String): IngredientMatch {
@@ -160,6 +185,10 @@ class ToxicityRepository private constructor(
         private const val TAG = "ToxicityRepository"
         private const val ASSET_FILE_NAME = "dog_toxicity_database.json"
         private val E_NUMBER_REGEX = Regex("^e\\d{3,4}$")
+        private const val ALCOHOL_SUBSTANCE_ID = "alcohol"
+        // Zwykłe angielskie słowa odległe o 1 edycję od aliasu ("daily" vs "dairy") - rozmyte
+        // dopasowanie ich nie obejmuje (znalezione na etykiecie karmy dla psów: fałszywe "Mleko i nabiał").
+        private val FUZZY_STOPWORDS = setOf("daily")
         // Scala zapisy typu "E 967" / "E-967" do jednej formy "E967" przed normalizacją,
         // żeby tokenizacja nie rozbiła numeru E na dwa osobne słowa.
         private val E_NUMBER_SPACING_REGEX = Regex("(?i)\\bE[\\s-]?(\\d{3,4})\\b")
