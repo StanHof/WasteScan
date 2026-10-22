@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
  * Sekwencyjnie, nie równolegle - celowo: zapytania do Gemini i tak są ograniczone limitem/kosztem
  * API, a sekwencyjne wykonanie daje czyste, nienakładające się pomiary czasu per zdjęcie.
  */
+private const val QUICK_RUN_SIZE = 5
+
 @Composable
 fun BenchmarkScreen(
     localClassifier: ClassifierStrategy,
@@ -54,6 +56,7 @@ fun BenchmarkScreen(
     var manifest by remember { mutableStateOf<List<BenchmarkGroundTruthEntry>>(emptyList()) }
     var isProcessing by remember { mutableStateOf(false) }
     var progressDone by remember { mutableIntStateOf(0) }
+    var runTotal by remember { mutableIntStateOf(0) }
     val results = remember { mutableStateListOf<BenchmarkResult>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -123,44 +126,57 @@ fun BenchmarkScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
 
-            Button(
-                onClick = {
-                    isProcessing = true
-                    progressDone = 0
-                    results.clear()
-                    errorMessage = null
-                    coroutineScope.launch {
-                        for (entry in manifest) {
-                            try {
-                                val bitmap = StorageManager.loadBenchmarkImage(context, entry.fileName)
-                                if (bitmap != null) {
-                                    val cropped = cropCenterSquare(bitmap)
-                                    val localReport = localClassifier.analyzeIngredients(cropped)
-                                    val localMediumReport = localMediumClassifier.analyzeIngredients(cropped)
-                                    val cloudReport = cloudClassifier.analyzeIngredients(cropped)
-                                    results.add(
-                                        BenchmarkResult(
-                                            imageLabel = entry.fileName,
-                                            localReport = localReport,
-                                            localMediumReport = localMediumReport,
-                                            cloudReport = cloudReport,
-                                            groundTruth = entry
-                                        )
+            // Wspólna ścieżka dla pełnego i szybkiego przebiegu - różnią się tylko listą wpisów.
+            fun runBenchmark(entries: List<BenchmarkGroundTruthEntry>) {
+                isProcessing = true
+                progressDone = 0
+                runTotal = entries.size
+                results.clear()
+                errorMessage = null
+                coroutineScope.launch {
+                    for (entry in entries) {
+                        try {
+                            val bitmap = StorageManager.loadBenchmarkImage(context, entry.fileName)
+                            if (bitmap != null) {
+                                val cropped = cropCenterSquare(bitmap)
+                                val localReport = localClassifier.analyzeIngredients(cropped)
+                                val localMediumReport = localMediumClassifier.analyzeIngredients(cropped)
+                                val cloudReport = cloudClassifier.analyzeIngredients(cropped)
+                                results.add(
+                                    BenchmarkResult(
+                                        imageLabel = entry.fileName,
+                                        localReport = localReport,
+                                        localMediumReport = localMediumReport,
+                                        cloudReport = cloudReport,
+                                        groundTruth = entry
                                     )
-                                } else {
-                                    errorMessage = "Nie znaleziono zdjęcia '${entry.fileName}' w assets/benchmark/ - pomijam."
-                                }
-                            } catch (e: Exception) {
-                                errorMessage = "Błąd przy przetwarzaniu '${entry.fileName}': ${e.localizedMessage}"
+                                )
+                            } else {
+                                errorMessage = "Nie znaleziono zdjęcia '${entry.fileName}' w assets/benchmark/ - pomijam."
                             }
-                            progressDone++
+                        } catch (e: Exception) {
+                            errorMessage = "Błąd przy przetwarzaniu '${entry.fileName}': ${e.localizedMessage}"
                         }
-                        isProcessing = false
+                        progressDone++
                     }
-                },
+                    isProcessing = false
+                }
+            }
+
+            Button(
+                onClick = { runBenchmark(manifest) },
                 enabled = !isProcessing && manifest.isNotEmpty()
             ) {
                 Text("Uruchom benchmark (${manifest.size} zdjęć)")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // Szybki przebieg: pierwsze QUICK_RUN_SIZE wpisów manifestu (stały podzbiór, więc
+            // wyniki szybkich przebiegów są porównywalne między sobą).
+            OutlinedButton(
+                onClick = { runBenchmark(manifest.take(QUICK_RUN_SIZE)) },
+                enabled = !isProcessing && manifest.isNotEmpty()
+            ) {
+                Text("Szybki test (${minOf(QUICK_RUN_SIZE, manifest.size)} zdjęć)")
             }
 
             if (isProcessing) {
@@ -168,7 +184,7 @@ fun BenchmarkScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Przetwarzanie $progressDone/${manifest.size}... (chmura może potrwać ~20s/zdjęcie)")
+                    Text("Przetwarzanie $progressDone/$runTotal... (chmura może potrwać ~20s/zdjęcie)")
                 }
             }
 
